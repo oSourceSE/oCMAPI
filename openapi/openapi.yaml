@@ -1,0 +1,1719 @@
+openapi: 3.0.0
+info:
+  title: oCMAPI
+  version: 1.0.0
+  license: 
+    name: BSD License
+    url: https://www.osource.se/license.html
+  description: >-
+    Container Management API for podman containers.
+
+
+    A project sprung out of the urge to learn rust and wanting to build a `API`
+    for managing `podman` containers in my local environment.
+
+
+    All requests and responses are JSON based for all API endpoints.
+servers:
+  - url: ''
+paths:
+  /v1/common/stats:
+    get:
+      summary: /v1/common/stats
+      tags:
+        - Common
+      operationId: getLiveStatistics
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  cpu_time:
+                    type: string
+                  cpu_percent:
+                    type: string
+                  avg_cpu:
+                    type: string
+                  mem_usage:
+                    type: string
+                  mem_percent:
+                    type: string
+                  net_io:
+                    type: string
+                  block_io:
+                    type: string
+                  pids:
+                    type: string
+        '404':
+          description: NotFound
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get current statistics for CPU, Memory and so on for all running containers.
+  /v1/common/version:
+    get:
+      summary: /v1/common/version
+      tags:
+        - Common
+      operationId: getPodmanVersion
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Client:
+                    type: object
+                    properties:
+                      APIVersion:
+                        type: string
+                      Version:
+                        type: string
+                      GoVersion:
+                        type: string
+                      GitCommit:
+                        type: string
+                      BuiltTime:
+                        type: string
+                      Built:
+                        type: integer
+                      OsArch:
+                        type: string
+                      Os:
+                        type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get information about your current version of podman.
+  /v1/common/info:
+    get:
+      summary: /v1/common/info
+      tags:
+        - Common
+      operationId: getPodmanInfo
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  host:
+                    type: object
+                    properties:
+                      arch:
+                        type: string
+                      buildahVersion:
+                        type: string
+                      cgroupManager:
+                        type: string
+                      cgroupVersion:
+                        type: string
+                      cgroupControllers:
+                        type: array
+                        items:
+                          type: string
+                      conmon:
+                        type: object
+                        properties:
+                          package:
+                            type: string
+                          path:
+                            type: string
+                          version:
+                            type: string
+                      cpus:
+                        type: string
+                      cpuUtilization:
+                        type: object
+                        properties:
+                          userPercent:
+                            type: string
+                          systemPercent:
+                            type: string
+                          idlePercent:
+                            type: string
+                      databaseBackend:
+                        type: string
+                      distribution:
+                        type: object
+                        properties:
+                          distribution:
+                            type: string
+                          version:
+                            type: string
+                          codename:
+                            type: string
+                      eventLogger:
+                        type: string
+                      freeLocks:
+                        type: string
+                      hostname:
+                        type: string
+                      idMappings:
+                        type: object
+                        properties:
+                          gidmap:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                container_id:
+                                  type: string
+                                host_id:
+                                  type: string
+                                size:
+                                  type: string
+                          uidmap:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                container_id:
+                                  type: string
+                                host_id:
+                                  type: string
+                                size:
+                                  type: string
+                      kernel:
+                        type: string
+                      logDriver:
+                        type: string
+                      memFree:
+                        type: string
+                      memTotal:
+                        type: string
+                      networkBackend:
+                        type: string
+                      networkBackendInfo:
+                        type: object
+                        properties:
+                          backend:
+                            type: string
+                          version:
+                            type: string
+                          package:
+                            type: string
+                          path:
+                            type: string
+                          dns:
+                            type: object
+                            properties:
+                              version:
+                                type: string
+                              package:
+                                type: string
+                              path:
+                                type: string
+                      ociRuntime:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          package:
+                            type: string
+                          path:
+                            type: string
+                          version:
+                            type: string
+                      os:
+                        type: string
+                      remoteSocket:
+                        type: object
+                        properties:
+                          path:
+                            type: string
+                          exists:
+                            type: string
+                      serviceIsRemote:
+                        type: string
+                      security:
+                        type: object
+                        properties:
+                          apparmorEnabled:
+                            type: string
+                          capabilities:
+                            type: string
+                          rootless:
+                            type: string
+                          seccompEnabled:
+                            type: string
+                          seccompProfilePath:
+                            type: string
+                          selinuxEnabled:
+                            type: string
+                      slirp4netns:
+                        type: object
+                        properties:
+                          executable:
+                            type: string
+                          package:
+                            type: string
+                          version:
+                            type: string
+                      pasta:
+                        type: object
+                        properties:
+                          executable:
+                            type: string
+                          package:
+                            type: string
+                          version:
+                            type: string
+                      swapFree:
+                        type: string
+                      swapTotal:
+                        type: string
+                      uptime:
+                        type: string
+                      variant:
+                        type: string
+                      linkmode:
+                        type: string
+                  store:
+                    type: object
+                    properties:
+                      configFile:
+                        type: string
+                      containerStore:
+                        type: object
+                        properties:
+                          number:
+                            type: string
+                          paused:
+                            type: string
+                          running:
+                            type: string
+                          stopped:
+                            type: string
+                      graphDriverName:
+                        type: string
+                      graphOptions:
+                        type: object
+                        properties:
+                          overlay.mountopt:
+                            type: string
+                      graphRoot:
+                        type: string
+                      graphRootAllocated:
+                        type: string
+                      graphRootUsed:
+                        type: string
+                      graphStatus:
+                        type: object
+                        properties:
+                          Backing Filesystem:
+                            type: string
+                          Native Overlay Diff:
+                            type: string
+                          Supports d_type:
+                            type: string
+                          Supports shifting:
+                            type: string
+                          Supports volatile:
+                            type: string
+                          Using metacopy:
+                            type: string
+                      imageCopyTmpDir:
+                        type: string
+                      imageStore:
+                        type: object
+                        properties:
+                          number:
+                            type: string
+                      runRoot:
+                        type: string
+                      volumePath:
+                        type: string
+                      transientStore:
+                        type: string
+                  registries:
+                    type: object
+                    properties:
+                      search:
+                        type: array
+                        items:
+                          type: string
+                  plugins:
+                    type: object
+                    properties:
+                      volume:
+                        type: array
+                        items:
+                          type: string
+                      network:
+                        type: array
+                        items:
+                          type: string
+                      log:
+                        type: array
+                        items:
+                          type: string
+                      authorization:
+                        type: string
+                  version:
+                    type: object
+                    properties:
+                      APIVersion:
+                        type: string
+                      Version:
+                        type: string
+                      GoVersion:
+                        type: string
+                      GitCommit:
+                        type: string
+                      BuiltTime:
+                        type: string
+                      Built:
+                        type: string
+                      OsArch:
+                        type: string
+                      Os:
+                        type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get complete information about your podman environment.
+  /v1/containers/status:
+    get:
+      summary: /v1/containers/status
+      tags:
+        - Containers
+      operationId: getAllContainerStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: string
+                    ExitCode:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get container status for all containers, whether they are running, exited and so on.
+  /v1/containers/status/created:
+    get:
+      summary: /v1/containers/status/created
+      tags:
+        - Containers
+      operationId: getContainersCreatedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: boolean
+                    ExitCode:
+                      type: integer
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all containers with status `created` if exists.
+  /v1/containers/status/running:
+    get:
+      summary: /v1/containers/status/running
+      tags:
+        - Containers
+      operationId: getContainersRunningStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: boolean
+                    ExitCode:
+                      type: integer
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all containers with status `running` if exists.
+  /v1/containers/status/paused:
+    get:
+      summary: /v1/containers/status/paused
+      tags:
+        - Containers
+      operationId: getContainersPausedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: boolean
+                    ExitCode:
+                      type: integer
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all containers with status `paused` if exists.
+  /v1/containers/status/exited:
+    get:
+      summary: /v1/containers/status/exited
+      tags:
+        - Containers
+      operationId: getContainersExitedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: boolean
+                    ExitCode:
+                      type: integer
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all containers with status `exited` if exists.
+  /v1/containers/status/unknown:
+    get:
+      summary: /v1/containers/status/unknown
+      tags:
+        - Containers
+      operationId: getContainersUnknownStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: boolean
+                    ExitCode:
+                      type: integer
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all containers with status `unknown` if exists.
+  /v1/containers/create:
+    post:
+      summary: /v1/containers/create
+      tags:
+        - Containers
+      operationId: postContainerCreateInfo
+      security:
+        - basicAuth: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: string
+                  Message:
+                    type: string
+                  ID:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        API for creating a container.
+
+
+        All options needs to be separated with a comma (`,`) and start with `--`
+        or they will be invalid.
+
+
+        For example like this:
+
+        ```json
+
+        {
+          "name": "MyContainer",
+          "image": "/full/path/to/repo/image:tag",
+          "options": "--option1,--option2=value2"
+        }
+
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                image:
+                  type: string
+                options:
+                  type: string
+  /v1/containers/setstate:
+    post:
+      summary: /v1/containers/setstate
+      tags:
+        - Containers
+      operationId: postContainerStateChange
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        With this API you can start, stop, pause and so on for a single
+        container.
+
+
+        Valid states to user are: `start`, `stop`, `pause`, `unpause` &
+        `restart`
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                state:
+                  type: string
+  /v1/pods/status:
+    get:
+      summary: /v1/pods/status
+      tags:
+        - Pods
+      operationId: getAllPodsStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  ID:
+                    type: string
+                  Created:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get status for all Pods.
+  /v1/pods/status/created:
+    get:
+      summary: /v1/pods/status/created
+      tags:
+        - Pods
+      operationId: getPodsCreatedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Status:
+                      type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all pods with status `created` if exists.
+  /v1/pods/status/running:
+    get:
+      summary: /v1/pods/status/running
+      tags:
+        - Pods
+      operationId: getPodsRunningStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Status:
+                      type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all pods with status `running` if exists.
+  /v1/pods/status/paused:
+    get:
+      summary: /v1/pods/status/paused
+      tags:
+        - Pods
+      operationId: getPodsPausedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Status:
+                      type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all pods with status `paused` if exists.
+  /v1/pods/status/exited:
+    get:
+      summary: /v1/pods/status/exited
+      tags:
+        - Pods
+      operationId: getPodsExitedStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Status:
+                      type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all pods with status `exited` if exists.
+  /v1/pods/status/unknown:
+    get:
+      summary: /v1/pods/status/unknown
+      tags:
+        - Pods
+      operationId: getPodsUnknownStatus
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Status:
+                      type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Code:
+                      type: integer
+                    Info:
+                      type: string
+                    Status:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get all pods with status `unknown` if exists.
+  /v1/pods/create:
+    post:
+      summary: /v1/pods/create
+      tags:
+        - Pods
+      operationId: postPodCreateInfo
+      security:
+        - basicAuth: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: integer
+                  Message:
+                    type: string
+                  ID:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        API for creating a pod.
+
+
+        All options needs to be comma (`,`) separated and start with `--` or they will be invalid.
+
+
+        For example like this:
+
+        ```json
+
+        {
+          "name": "MyPod",
+          "options": "--option1,--option2=value2"
+        }
+
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                options:
+                  type: string
+  /v1/pods/setstate:
+    post:
+      summary: /v1/pods/setstate
+      tags:
+        - Pods
+      operationId: postPodStateChange
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '204':
+          description: No Content
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        With this API you can start, stop, pause and so on for a single pod.
+
+
+        Valid states to user are: `start`, `stop`, `pause`, `unpause` &
+        `restart`
+
+
+        This will affect all containers connected to the pod you are issuing the
+        command to, so if only one container in the pod needs to be for example
+        restarted and it do not have dependencies from other containers,
+        sometimes it is better to just restart that single container.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                state:
+                  type: string
+  /v1/networks/info:
+    get:
+      summary: /v1/networks/info
+      tags:
+        - Networks
+      operationId: getAllNetworksInfo
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: string
+                    ID:
+                      type: string
+                    Driver:
+                      type: string
+                    Created:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: Get information on all existing podman networks.
+  /v1/networks/info/<id>:
+    get:
+      summary: /v1/networks/info/<id>
+      tags:
+        - Networks
+      operationId: getSingleNetworkInfo
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    id:
+                      type: string
+                    driver:
+                      type: string
+                    network_interface:
+                      type: string
+                    created:
+                      type: string
+                    subnets:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          subnet:
+                            type: string
+                          gateway:
+                            type: string
+                    ipv6_enabled:
+                      type: string
+                    internal:
+                      type: string
+                    dns_enabled:
+                      type: string
+                    network_dns_servers:
+                      type: array
+                      items:
+                        type: string
+                    ipam_options:
+                      type: object
+                      properties:
+                        driver:
+                          type: string
+                    containers:
+                      type: object
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        Get information on a specific podman network.
+
+
+        Replace `<id>` with either network name or ID for the network you want
+        information about.
+  /v1/networks/create:
+    post:
+      summary: /v1/networks/create
+      tags:
+        - Networks
+      operationId: postNetworkCreateInfo
+      security:
+        - basicAuth: []
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Status:
+                    type: integer
+                  Message:
+                    type: string
+                  ID:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      description: >-
+        API for creating a podman networks.
+
+
+        All options needs to be comma (`,`) seperated and start with `--` or
+        they will be invalid.
+
+
+        For example like this:
+
+        ```
+
+        {
+          "name": "MyNetwork",
+          "options": "--option1,--option2=value2"
+        }
+
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                options:
+                  type: string
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic authentication with username & password.
+tags:
+  - name: Common
+    description: All interfaces related to systemwide information and configuration for podman resides under here.
+  - name: Containers
+    description: All interfaces related to container management resides under here.
+  - name: Pods
+    description: All interfaces related to pod management resides under here.
+  - name: Networks
+    description: All interfaces related to network management resides under here.

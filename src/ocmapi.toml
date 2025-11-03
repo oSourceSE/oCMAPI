@@ -1,0 +1,35 @@
+# The IP and Port the server should listen on, can be either 127.0.0.1 for local only,
+# your network cards IP or 0.0.0.0 to listen on all assigned IP:s to the server.
+# ssl need to be either no/yes, and if yes certificate parameters needs correct values as well.
+# Required: Yes 
+[server]
+listen = "127.0.0.1"
+port = "8080"
+ssl = "no"
+
+# To run SSL set 'ssl' to yes and add full path to your certificate and private key,
+# The certificate need to be a so called fullchain certificate to work properly.
+# Required: Only when ssl = "yes"
+[certificate]
+certfile = ""
+keyfile = ""
+
+# Sets the name of the cookie used, change to your own to make it unique.
+# Required: Yes
+[session]
+cookiename = "ocmapi-cookie"
+
+# Authentication settings for communication with the API endpoints.
+# make sure salt parameter is changed and use a string between
+# 20-254 random characters to make it unique for you,
+# just do not use " as that will mess up the configuration file.
+# Required: Yes
+[auth]
+salt = "je945845n4r09esdrf908345jkh345"
+username = ""
+password = ""
+
+# Path to where logs will be stored, if left empty they end up in the same directory as the binary.
+# Required: No
+[logs]
+logpath = ""
