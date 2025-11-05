@@ -101,7 +101,7 @@ Endpoints:
 >
 > /v1/pods/create
 >
-> /v1/pods/setstate`
+> /v1/pods/setstate
 
 #### Networks
 
