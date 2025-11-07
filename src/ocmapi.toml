@@ -33,3 +33,8 @@ password = ""
 # Required: No
 [logs]
 logpath = ""
+
+# Where should ENV files be stored on remote server.
+# Required: Yes
+[env]
+envpath = ""

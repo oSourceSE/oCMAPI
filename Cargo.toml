@@ -1,6 +1,6 @@
 [package]
 name = "ocmapi"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 
 [dependencies]
@@ -19,3 +19,4 @@ chrono = "0.4.42"
 gethostname = "1.1.0"
 include_dir = "0.7.4"
 argh = "0.1.13"
+regex = "1.12.2"

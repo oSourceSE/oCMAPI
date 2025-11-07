@@ -29,9 +29,17 @@ pub struct StateContainer {
     pub state: String,
 }
 
-// Model for container state.
+// Model for pod state.
 #[derive(Serialize, Deserialize)]
 pub struct StatePod {
     pub name: String,
     pub state: String,
+}
+
+// Model for env file.
+#[derive(Serialize, Deserialize)]
+pub struct EnvFile {
+    pub name: String,
+    pub content: String,
+    pub replace: String,
 }

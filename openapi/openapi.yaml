@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.0
-  license: 
+  version: 1.0.1
+  license:
     name: BSD License
     url: https://www.osource.se/license.html
   description: >-
@@ -17,14 +17,12 @@ info:
 servers:
   - url: ''
 paths:
-  /v1/common/stats:
+  /v1/common/getStats:
     get:
-      summary: /v1/common/stats
+      summary: /v1/common/getStats
       tags:
         - Common
       operationId: getLiveStatistics
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -79,15 +77,17 @@ paths:
                     type: string
                   Error:
                     type: string
-      description: Get current statistics for CPU, Memory and so on for all running containers.
-  /v1/common/version:
+      security:
+        - BasicAuth: []
+      description: >-
+        Get current statistics for CPU, Memory and so on for all running
+        containers.
+  /v1/common/getVersion:
     get:
-      summary: /v1/common/version
+      summary: /v1/common/getVersion
       tags:
         - Common
       operationId: getPodmanVersion
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -128,15 +128,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get information about your current version of podman.
-  /v1/common/info:
+  /v1/common/getInfo:
     get:
-      summary: /v1/common/info
+      summary: /v1/common/getInfo
       tags:
         - Common
       operationId: getPodmanInfo
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -430,15 +430,107 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get complete information about your podman environment.
-  /v1/containers/status:
+  /v1/common/postCreateEnvFile:
+    post:
+      summary: /v1/common/postCreateEnvFile
+      tags:
+        - Common
+      operationId: postCreateEnvFile
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  File:
+                    type: string
+                  Message:
+                    type: string
+                  Status:
+                    type: integer
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      security:
+        - BasicAuth: []
+      description: >-
+        Create or replace an `env` file with parameters used in containers, good
+        for moving variables like `usernames`, `passwords` and so on from the
+        create command when creating a container.
+
+
+        The file will automatically get the `.env` added at the end, so the
+        `name` tag should only contain the name you want to give it.
+
+
+        the `content` data must be separated with a `|` in order for the API to
+        successfully split the data into correct format, there are no need to
+        add an `|` after final variable.
+
+
+        For example:
+
+        ```
+
+        {
+          "name": "filename",
+          "content", "USER=user|PASS=password",
+          "replace", "no"
+        }
+
+        ```
+
+
+        You can overwrite an existing file by setting the `replace` tag to yes,
+        otherwise it will not do anything if the file already exists. The
+        `replace` tag can only consist of the words `yes` or `no`, if you put
+        something else here it will halt and error out.
+
+
+        for example:
+
+        ```
+
+        {
+          "name": "filename",
+          "content", "USER=user|PASS=password",
+          "replace", "yes"
+        }
+
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                content:
+                  type: string
+                replace:
+                  type: string
+  /v1/containers/getStatus:
     get:
-      summary: /v1/containers/status
+      summary: /v1/containers/getStatus
       tags:
         - Containers
       operationId: getAllContainerStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -472,15 +564,17 @@ paths:
                     type: string
                   Error:
                     type: string
-      description: Get container status for all containers, whether they are running, exited and so on.
-  /v1/containers/status/created:
+      security:
+        - BasicAuth: []
+      description: >-
+        Get container status for all containers, whether they are running,
+        exited and so on.
+  /v1/containers/getStatus/created:
     get:
-      summary: /v1/containers/status/created
+      summary: /v1/containers/getStatus/created
       tags:
         - Containers
       operationId: getContainersCreatedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -506,16 +600,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -542,15 +634,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all containers with status `created` if exists.
-  /v1/containers/status/running:
+  /v1/containers/getStatus/running:
     get:
-      summary: /v1/containers/status/running
+      summary: /v1/containers/getStatus/running
       tags:
         - Containers
       operationId: getContainersRunningStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -576,16 +668,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -612,15 +702,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all containers with status `running` if exists.
-  /v1/containers/status/paused:
+  /v1/containers/getStatus/paused:
     get:
-      summary: /v1/containers/status/paused
+      summary: /v1/containers/getStatus/paused
       tags:
         - Containers
       operationId: getContainersPausedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -646,16 +736,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -682,15 +770,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all containers with status `paused` if exists.
-  /v1/containers/status/exited:
+  /v1/containers/getStatus/exited:
     get:
-      summary: /v1/containers/status/exited
+      summary: /v1/containers/getStatus/exited
       tags:
         - Containers
       operationId: getContainersExitedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -716,16 +804,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -752,15 +838,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all containers with status `exited` if exists.
-  /v1/containers/status/unknown:
+  /v1/containers/getStatus/unknown:
     get:
-      summary: /v1/containers/status/unknown
+      summary: /v1/containers/getStatus/unknown
       tags:
         - Containers
       operationId: getContainersUnknownStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -786,16 +872,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -822,15 +906,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all containers with status `unknown` if exists.
-  /v1/containers/create:
+  /v1/containers/postContainerCreate:
     post:
-      summary: /v1/containers/create
+      summary: /v1/containers/postContainerCreate
       tags:
         - Containers
-      operationId: postContainerCreateInfo
-      security:
-        - basicAuth: []
+      operationId: postContainerCreate
       responses:
         '201':
           description: Created
@@ -840,7 +924,7 @@ paths:
                 type: object
                 properties:
                   Status:
-                    type: string
+                    type: integer
                   Message:
                     type: string
                   ID:
@@ -871,6 +955,8 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         API for creating a container.
 
@@ -902,14 +988,12 @@ paths:
                   type: string
                 options:
                   type: string
-  /v1/containers/setstate:
+  /v1/containers/postSetState:
     post:
-      summary: /v1/containers/setstate
+      summary: /v1/containers/postSetState
       tags:
         - Containers
       operationId: postContainerStateChange
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -961,10 +1045,11 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         With this API you can start, stop, pause and so on for a single
         container.
-
 
         Valid states to user are: `start`, `stop`, `pause`, `unpause` &
         `restart`
@@ -978,14 +1063,12 @@ paths:
                   type: string
                 state:
                   type: string
-  /v1/pods/status:
+  /v1/pods/getStatus:
     get:
-      summary: /v1/pods/status
+      summary: /v1/pods/getStatus
       tags:
         - Pods
       operationId: getAllPodsStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1013,15 +1096,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get status for all Pods.
-  /v1/pods/status/created:
+  /v1/pods/getStatus/created:
     get:
-      summary: /v1/pods/status/created
+      summary: /v1/pods/getStatus/created
       tags:
         - Pods
       operationId: getPodsCreatedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1043,16 +1126,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -1079,15 +1160,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all pods with status `created` if exists.
-  /v1/pods/status/running:
+  /v1/pods/getStatus/running:
     get:
-      summary: /v1/pods/status/running
+      summary: /v1/pods/getStatus/running
       tags:
         - Pods
       operationId: getPodsRunningStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1109,16 +1190,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -1145,15 +1224,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all pods with status `running` if exists.
-  /v1/pods/status/paused:
+  /v1/pods/getStatus/paused:
     get:
-      summary: /v1/pods/status/paused
+      summary: /v1/pods/getStatus/paused
       tags:
         - Pods
       operationId: getPodsPausedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1175,16 +1254,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -1211,15 +1288,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all pods with status `paused` if exists.
-  /v1/pods/status/exited:
+  /v1/pods/getStatus/exited:
     get:
-      summary: /v1/pods/status/exited
+      summary: /v1/pods/getStatus/exited
       tags:
         - Pods
       operationId: getPodsExitedStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1241,16 +1318,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -1277,15 +1352,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all pods with status `exited` if exists.
-  /v1/pods/status/unknown:
+  /v1/pods/getStatus/unknown:
     get:
-      summary: /v1/pods/status/unknown
+      summary: /v1/pods/getStatus/unknown
       tags:
         - Pods
       operationId: getPodsUnknownStatus
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1307,16 +1382,14 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Code:
-                      type: integer
-                    Info:
-                      type: string
-                    Status:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
+                    type: string
         '400':
           description: Bad Request
           content:
@@ -1343,15 +1416,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get all pods with status `unknown` if exists.
-  /v1/pods/create:
+  /v1/pods/postPodCreate:
     post:
-      summary: /v1/pods/create
+      summary: /v1/pods/postPodCreate
       tags:
         - Pods
-      operationId: postPodCreateInfo
-      security:
-        - basicAuth: []
+      operationId: postPodCreate
       responses:
         '201':
           description: Created
@@ -1392,23 +1465,14 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         API for creating a pod.
 
 
-        All options needs to be comma (`,`) separated and start with `--` or they will be invalid.
-
-
-        For example like this:
-
-        ```json
-
-        {
-          "name": "MyPod",
-          "options": "--option1,--option2=value2"
-        }
-
-        ```
+        All options needs to be comma (`,`) separated and start with `--` or
+        they will be invalid.
       requestBody:
         content:
           application/json:
@@ -1419,14 +1483,12 @@ paths:
                   type: string
                 options:
                   type: string
-  /v1/pods/setstate:
+  /v1/pods/postSetState:
     post:
-      summary: /v1/pods/setstate
+      summary: /v1/pods/postSetState
       tags:
         - Pods
       operationId: postPodStateChange
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1478,9 +1540,10 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         With this API you can start, stop, pause and so on for a single pod.
-
 
         Valid states to user are: `start`, `stop`, `pause`, `unpause` &
         `restart`
@@ -1500,14 +1563,12 @@ paths:
                   type: string
                 state:
                   type: string
-  /v1/networks/info:
+  /v1/networks/getInfo:
     get:
-      summary: /v1/networks/info
+      summary: /v1/networks/getInfo
       tags:
         - Networks
       operationId: getAllNetworksInfo
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1539,15 +1600,15 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: Get information on all existing podman networks.
-  /v1/networks/info/<id>:
+  /v1/networks/getInfo/<id>:
     get:
-      summary: /v1/networks/info/<id>
+      summary: /v1/networks/getInfo/<id>
       tags:
         - Networks
       operationId: getSingleNetworkInfo
-      security:
-        - basicAuth: []
       responses:
         '200':
           description: OK
@@ -1594,6 +1655,7 @@ paths:
                           type: string
                     containers:
                       type: object
+                      properties: {}
         '400':
           description: Bad Request
           content:
@@ -1620,20 +1682,20 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         Get information on a specific podman network.
 
 
         Replace `<id>` with either network name or ID for the network you want
         information about.
-  /v1/networks/create:
+  /v1/networks/postNetworkCreate:
     post:
-      summary: /v1/networks/create
+      summary: /v1/networks/postNetworkCreate
       tags:
         - Networks
-      operationId: postNetworkCreateInfo
-      security:
-        - basicAuth: []
+      operationId: postNetworkCreate
       responses:
         '201':
           description: Created
@@ -1674,24 +1736,14 @@ paths:
                     type: string
                   Error:
                     type: string
+      security:
+        - BasicAuth: []
       description: >-
         API for creating a podman networks.
 
 
         All options needs to be comma (`,`) seperated and start with `--` or
         they will be invalid.
-
-
-        For example like this:
-
-        ```
-
-        {
-          "name": "MyNetwork",
-          "options": "--option1,--option2=value2"
-        }
-
-        ```
       requestBody:
         content:
           application/json:
@@ -1704,10 +1756,9 @@ paths:
                   type: string
 components:
   securitySchemes:
-    basicAuth:
+    BasicAuth:
       type: http
       scheme: basic
-      description: Basic authentication with username & password.
 tags:
   - name: Common
     description: All interfaces related to systemwide information and configuration for podman resides under here.
