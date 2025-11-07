@@ -77,7 +77,7 @@ Endpoints:
 > 
 > /v1/common/getInfo
 >
-> /v1/common/postCreateEnvFile
+> /v1/common/postEnvFileCreate
 
 #### Containers
 
