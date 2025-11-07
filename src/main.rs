@@ -88,7 +88,7 @@ async fn http_server() -> std::io::Result<()> {
                     .route("/v1/common/getStats", web::get().guard(guard::Get()).to(handlers::get_common_stats))
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
-                    .route("/v1/common/postCreateEnvFile", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
+                    .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))
@@ -102,7 +102,7 @@ async fn http_server() -> std::io::Result<()> {
                     // Networks API
                     .route("/v1/networks/getInfo", web::get().guard(guard::Get()).to(handlers::get_networks_info))
                     .route("/v1/networks/getInfo/{id}", web::get().guard(guard::Get()).to(handlers::get_networks_info_single))
-                    .route("/v1/networks/postCreateNetwork", web::post().guard(guard::Post()).to(handlers::post_networks_create))
+                    .route("/v1/networks/postNetworkCreate", web::post().guard(guard::Post()).to(handlers::post_networks_create))
             )
         })
         .bind(config::SERVER_ADDRESS.get().unwrap())?
@@ -150,7 +150,7 @@ async fn https_server() -> std::io::Result<()> {
                     .route("/v1/common/getStats", web::get().guard(guard::Get()).to(handlers::get_common_stats))
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
-                    .route("/v1/common/postCreateEnvFile", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
+                    .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))
@@ -164,7 +164,7 @@ async fn https_server() -> std::io::Result<()> {
                     // Networks API
                     .route("/v1/networks/getInfo", web::get().guard(guard::Get()).to(handlers::get_networks_info))
                     .route("/v1/networks/getInfo/{id}", web::get().guard(guard::Get()).to(handlers::get_networks_info_single))
-                    .route("/v1/networks/postCreateNetwork", web::post().guard(guard::Post()).to(handlers::post_networks_create))
+                    .route("/v1/networks/postNetworkCreate", web::post().guard(guard::Post()).to(handlers::post_networks_create))
             )
         })
         .bind_rustls_0_23(config::SERVER_ADDRESS.get().unwrap(), tls_config)?
