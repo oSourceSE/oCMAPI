@@ -71,48 +71,50 @@ Make sure that every path in configuration file is absolute paths.
 All interfaces related to systemwide information and configuration for podman resides under here.
 
 Endpoints:
-> /v1/common/stats
+> /v1/common/getStats
 > 
-> /v1/common/version
+> /v1/common/getVersion
 > 
-> /v1/common/info
+> /v1/common/getInfo
+>
+> /v1/common/postCreateEnvFile
 
 #### Containers
 
 All interfaces related to container management resides under here.
 
 Endpoints:
-> /v1/containers/status
+> /v1/containers/getStatus
 >
-> /v1/containers/status/\<id\>
+> /v1/containers/getStatus/\<id\>
 >
-> /v1/containers/create
+> /v1/containers/postContainerCreate
 >
-> /v1/containers/setstate
+> /v1/containers/postSetState
 
 #### Pods
 
 All interfaces related to pod management resides under here.
 
 Endpoints:
-> /v1/pods/status
+> /v1/pods/getStatus
 >
-> /v1/pods/status/\<id\>
+> /v1/pods/getStatus/\<id\>
 >
-> /v1/pods/create
+> /v1/pods/postPodCreate
 >
-> /v1/pods/setstate
+> /v1/pods/postSetState
 
 #### Networks
 
 All interfaces related to network management resides under here.
 
 Endpoints:
-> /v1/networks/info
+> /v1/networks/getInfo
 >
-> /v1/networks/info/\<id\>
+> /v1/networks/getInfo/\<id\>
 >
-> /v1/networks/create
+> /v1/networks/postNetworkCreate
 
 ## Command line options
 
@@ -131,5 +133,4 @@ Options:
 
 The following API:s are in the works and will be available shortly.
 
-* Create/remove ENV files that can be connected to containers.
 * Create/remove secrets to be used with containers.
