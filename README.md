@@ -134,3 +134,4 @@ Options:
 The following API:s are in the works and will be available shortly.
 
 * Create/remove secrets to be used with containers.
+* API for removing `Env` files.
