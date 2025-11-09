@@ -29,43 +29,32 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-                  cpu_time:
-                    type: string
-                  cpu_percent:
-                    type: string
-                  avg_cpu:
-                    type: string
-                  mem_usage:
-                    type: string
-                  mem_percent:
-                    type: string
-                  net_io:
-                    type: string
-                  block_io:
-                    type: string
-                  pids:
-                    type: string
-        '404':
-          description: NotFound
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-        '500':
-          description: Error
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+                    cpu_time:
+                      type: string
+                    cpu_percent:
+                      type: string
+                    avg_cpu:
+                      type: string
+                    mem_usage:
+                      type: string
+                    mem_percent:
+                      type: string
+                    net_io:
+                      type: string
+                    block_io:
+                      type: string
+                    pids:
+                      type: string
+        '400':
+          description: Bad Request
           content:
             application/json:
               schema:
@@ -433,12 +422,12 @@ paths:
       security:
         - BasicAuth: []
       description: Get complete information about your podman environment.
-  /v1/common/postCreateEnvFile:
+  /v1/common/postEnvFileCreate:
     post:
-      summary: /v1/common/postCreateEnvFile
+      summary: /v1/common/postEnvFileCreate
       tags:
         - Common
-      operationId: postCreateEnvFile
+      operationId: postEnvFileCreate
       responses:
         '201':
           description: Created
@@ -595,19 +584,6 @@ paths:
                       type: boolean
                     ExitCode:
                       type: integer
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -620,6 +596,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -663,19 +652,6 @@ paths:
                       type: boolean
                     ExitCode:
                       type: integer
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -688,6 +664,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -731,19 +720,6 @@ paths:
                       type: boolean
                     ExitCode:
                       type: integer
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -756,6 +732,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -799,19 +788,6 @@ paths:
                       type: boolean
                     ExitCode:
                       type: integer
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -824,6 +800,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -867,19 +856,6 @@ paths:
                       type: boolean
                     ExitCode:
                       type: integer
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -892,6 +868,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1006,19 +995,6 @@ paths:
                     type: string
                   State:
                     type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  State:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1031,6 +1007,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  State:
                     type: string
         '500':
           description: Error
@@ -1121,19 +1110,6 @@ paths:
                       type: string
                     Status:
                       type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1146,6 +1122,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1185,19 +1174,6 @@ paths:
                       type: string
                     Status:
                       type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1210,6 +1186,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1249,19 +1238,6 @@ paths:
                       type: string
                     Status:
                       type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1274,6 +1250,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1313,19 +1302,6 @@ paths:
                       type: string
                     Status:
                       type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1338,6 +1314,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1377,19 +1366,6 @@ paths:
                       type: string
                     Status:
                       type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1402,6 +1378,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  Status:
                     type: string
         '500':
           description: Error
@@ -1501,19 +1490,6 @@ paths:
                     type: string
                   State:
                     type: string
-        '204':
-          description: No Content
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  State:
-                    type: string
         '400':
           description: Bad Request
           content:
@@ -1526,6 +1502,19 @@ paths:
                   Message:
                     type: string
                   Error:
+                    type: string
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Info:
+                    type: string
+                  State:
                     type: string
         '500':
           description: Error

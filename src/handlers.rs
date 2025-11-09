@@ -9,9 +9,23 @@ use regex::Regex;
 use crate::{config::ENV_PATH, models::{ CreateContainer, CreateNetwork, CreatePod, EnvFile, StateContainer, StatePod }};
 use crate::logs;
 
+// Collection of common headers for API responses.
+pub fn api_headers() -> Vec<String> {
+    // Vec for headers.
+    let vheaders: Vec<String> = vec![
+        // API Version.
+        "1".to_string(),
+        // ContentType JSON, application/json.
+        ContentType::json().to_string(),
+        // ContentType HTML, text/html; charset=utf-8.
+        ContentType::html().to_string(),
+    ];
+    // Return headers.
+    vheaders
+}
+
 /* --- Main API Information Web --- */
 pub async fn api_info_web(reqdata: HttpRequest) -> io::Result<HttpResponse> {
-
     // Include html file inside binary.
     static HTML_DIR: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/src/html");
     let api_html = HTML_DIR.get_file("api.html").unwrap();
@@ -37,10 +51,14 @@ pub async fn api_info_web(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
     let _ = logs::send_logs(logdata);
 
-    // Add correct headers.
-    let ctype = "text/html; charset=utf-8";
+    // Fetch headers.
+    let vheaders = api_headers();
+
     // Send response.
-    Ok( HttpResponse::build(StatusCode::OK).content_type(ctype).body(html_body) )
+    Ok( HttpResponse::build(StatusCode::OK)
+        .append_header(("api-version",vheaders[0].clone()))
+        .content_type(vheaders[2].clone())
+        .body(html_body) )
 }
 
 /* --- Common API --- */
@@ -87,11 +105,14 @@ pub async fn get_common_stats(reqdata: HttpRequest) -> io::Result<HttpResponse> 
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .body(data) )
             }
             // Return error since no containers are running.
             else {
@@ -118,17 +139,20 @@ pub async fn get_common_stats(reqdata: HttpRequest) -> io::Result<HttpResponse> 
 
                 let data = json!(
                     {
-                        "Code": "404",
+                        "Code": 404,
                         "Message": "No stats available, No containers running?",
                         "Error": "Empty Respons"
                     }
                 );
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::NotFound().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::NotFound()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         },
         // When error build response.
@@ -163,8 +187,14 @@ pub async fn get_common_stats(reqdata: HttpRequest) -> io::Result<HttpResponse> 
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -204,11 +234,14 @@ pub async fn get_common_version(reqdata: HttpRequest) -> io::Result<HttpResponse
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
-            // Add correct headers.
-            let add_headers = ContentType::json();
+            // Fetch headers.
+            let vheaders = api_headers();
 
             // Return answer.
-            Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
         },
         // When error build response.
         Err(cmd_err) => {
@@ -242,8 +275,14 @@ pub async fn get_common_version(reqdata: HttpRequest) -> io::Result<HttpResponse
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::BadRequest().json(data) )
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -283,11 +322,14 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
-            // Add correct headers.
-            let add_headers = ContentType::json();
+            // Fetch headers.
+            let vheaders = api_headers();
 
             // Return answer.
-            Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
         },
         // When error build response.
         Err(cmd_err) => {
@@ -321,8 +363,14 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::BadRequest().json(data) )
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -367,8 +415,14 @@ pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest)
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok( HttpResponse::BadRequest().json(data) );  
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );  
     }
 
     // Build complete path to file.
@@ -410,8 +464,14 @@ pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest)
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok( HttpResponse::BadRequest().json(data) );
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
     }
 
     // If replace is set to yes, go ahead and write a new file or owerwrite old file.
@@ -452,10 +512,14 @@ pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest)
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIEnvFile={} oCMAPICreateType=EnvFile",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],full_path);
         let _ = logs::send_logs(logdata);
 
-        // Add correct headers.
-        let add_headers = ContentType::json();
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        Ok( HttpResponse::Created().insert_header(add_headers).json(data) )
+        Ok( HttpResponse::Created()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) )
     }
     else {
         // Construct JSON object
@@ -488,8 +552,14 @@ pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest)
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        Ok( HttpResponse::BadRequest().json(data) )
+        Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) )
     }
 }
 
@@ -543,11 +613,14 @@ pub async fn get_containers_status(reqdata: HttpRequest) -> io::Result<HttpRespo
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
-            // Add correct headers.
-            let add_headers = ContentType::json();
+            // Fetch headers.
+            let vheaders = api_headers();
 
             // Return answer.
-            Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
         },
         // When error build response.
         Err(cmd_err) => {
@@ -581,8 +654,14 @@ pub async fn get_containers_status(reqdata: HttpRequest) -> io::Result<HttpRespo
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -632,8 +711,15 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
         // Send information to log.
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok( HttpResponse::BadRequest().json(data) );
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
     }
 
     // The command.
@@ -686,10 +772,15 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
-                // Add correct headers.
-                let add_headers = ContentType::json();
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .body(data) )
             }
             // Return error since no containers are running.
             else {
@@ -697,7 +788,7 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
                 let data = json!(
                     [
                         {
-                            "Code": 204,
+                            "Code": 404,
                             "Info": format!("No containers matching query status: {}",arg_input.replace("status=", "")),
                             "Status": "None"
                         }
@@ -719,14 +810,19 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
                     ua_string
                 ];
                 // Get log function and put requierd data into it.
-                let vlog: Vec<String> = logs::log_data(204,"No Content",0,"GET",vlogdata);
+                let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
-                // Add correct headers.
-                let add_headers = ContentType::json();
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::NoContent().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::NotFound()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         }
         Err(cmd_err) => {
@@ -760,8 +856,14 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -825,8 +927,14 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            return Ok(HttpResponse::BadRequest().json(data));
+            return Ok(HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data));
         }
 
         //  Const with bad options.
@@ -871,8 +979,14 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok(HttpResponse::BadRequest().json(data));
+        return Ok(HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data));
     }
 
     // Build the command.
@@ -918,11 +1032,14 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPICreateID={} oCMAPICreateType=Container",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],cdata);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::Created().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::Created()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             else {
                 // Construct JSON object
@@ -955,8 +1072,14 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::BadRequest().json(data) )
+                Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         },
         // When error build response.
@@ -991,8 +1114,14 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1053,8 +1182,14 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok( HttpResponse::BadRequest().json(data) );
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
     }
 
     // The command.
@@ -1105,10 +1240,14 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIContainerName={} oCMAPISetState={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name,jdata.state);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             // Return status when no containers are matching state.
             else {
@@ -1116,7 +1255,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 let data = json!(
                     [
                         {
-                            "Code": 204,
+                            "Code": 404,
                             "Info": format!("No container handled based on given input state: {}",arg_input),
                             "State": "None"
                         }
@@ -1138,15 +1277,19 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                     ua_string
                 ];
                 // Get log function and put requierd data into it.
-                let vlog: Vec<String> = logs::log_data(204,"No Content",0,"POST",vlogdata);
+                let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"POST",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::NotFound()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         }
         Err(cmd_err) => {
@@ -1180,8 +1323,14 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1234,11 +1383,14 @@ pub async fn get_pods_status(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
-            // Add correct headers.
-            let add_headers = ContentType::json();
+            // Fetch headers.
+            let vheaders = api_headers();
 
             // Return answer.
-            Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
         },
         // When error build response.
         Err(cmd_err) => {
@@ -1272,8 +1424,14 @@ pub async fn get_pods_status(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1339,8 +1497,14 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::BadRequest().json(data) )
+                Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             else {
                 // Check length of stdout, returns empty response when no containers are running.
@@ -1376,18 +1540,21 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                     let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                     let _ = logs::send_logs(logdata);
 
-                    // Add correct headers.
-                    let add_headers = ContentType::json();
+                    // Fetch headers.
+                    let vheaders = api_headers();
 
                     // Return answer.
-                    Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+                    Ok( HttpResponse::Ok()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .body(data) )
                 }
                 // Return error since no containers are running.
                 else {
                     let data = json!(
                         [
                             {
-                                "Code": 204,
+                                "Code": 404,
                                 "Info": format!("No pods matching query status: {}",arg_input.replace("status=", "")),
                                 "Status": "None"
                             }
@@ -1410,16 +1577,19 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                     ];
 
                     // Get log function and put requierd data into it.
-                    let vlog: Vec<String> = logs::log_data(204,"No Content",0,"GET",vlogdata);
+                    let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
                     // Send information to log.
                     let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                     let _ = logs::send_logs(logdata);
 
-                    // Add correct headers.
-                    let add_headers = ContentType::json();
+                    // Fetch headers.
+                    let vheaders = api_headers();
                     
                     // Return answer.
-                    Ok( HttpResponse::NoContent().insert_header(add_headers).json(data) )
+                    Ok( HttpResponse::NotFound()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .json(data) )
                 }
             }
         }
@@ -1454,8 +1624,14 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1520,8 +1696,14 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            return Ok(HttpResponse::BadRequest().json(data));
+            return Ok(HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data));
         }
     }
     // if requirements are not met, error out.
@@ -1556,8 +1738,14 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok(HttpResponse::BadRequest().json(data));
+        return Ok(HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data));
     }
 
     //  Const with bad options.
@@ -1610,11 +1798,14 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPICreateID={} oCMAPICreateType=Pod",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],cdata);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::Created().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::Created()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             else {
                 // Construct JSON object
@@ -1647,8 +1838,14 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::BadRequest().json(data) )
+                Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         },
         // When error build response.
@@ -1683,8 +1880,14 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1744,8 +1947,14 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok( HttpResponse::BadRequest().json(data) );
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
     }
 
     // The command.
@@ -1796,17 +2005,21 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIPodName={} oCMAPISetState={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name,jdata.state);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             // Return status when no pods are matching state.
             else {
                 // Construct JSON object
                 let data = json!(
                     {
-                        "Code": 204,
+                        "Code": 404,
                         "Info": format!("No pod handled based on given input state: {}",arg_input),
                         "State": "None"
                     }
@@ -1827,15 +2040,19 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                     ua_string
                 ];
                 // Get log function and put requierd data into it.
-                let vlog: Vec<String> = logs::log_data(204,"No Content",0,"POST",vlogdata);
+                let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"POST",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::NotFound()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         }
         Err(cmd_err) => {
@@ -1869,8 +2086,14 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -1924,11 +2147,14 @@ pub async fn get_networks_info(reqdata: HttpRequest) -> io::Result<HttpResponse>
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
-            // Add correct headers.
-            let add_headers = ContentType::json();
+            // Fetch headers.
+            let vheaders = api_headers();
 
             // Return answer.
-            Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
         },
         // When error build response.
         Err(cmd_err) => {
@@ -1962,8 +2188,14 @@ pub async fn get_networks_info(reqdata: HttpRequest) -> io::Result<HttpResponse>
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -2008,14 +2240,16 @@ pub async fn get_networks_info_single(param: web::Path<String>,reqdata: HttpRequ
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::Ok().insert_header(add_headers).body(data) )
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .body(data) )
             }
             else {
-
                 // Build JSON response.
                 let data = json!(
                     {
@@ -2046,11 +2280,14 @@ pub async fn get_networks_info_single(param: web::Path<String>,reqdata: HttpRequ
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::BadRequest().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
 
         }
@@ -2085,8 +2322,14 @@ pub async fn get_networks_info_single(param: web::Path<String>,reqdata: HttpRequ
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::BadRequest().json(data) )
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
@@ -2150,8 +2393,14 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            return Ok( HttpResponse::BadRequest().json(data));
+            return Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data));
         }
     }
     // if requirements are not met, error out.
@@ -2187,8 +2436,14 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
         let _ = logs::send_logs(logdata);
 
+        // Fetch headers.
+        let vheaders = api_headers();
+
         // Return answer.
-        return Ok(HttpResponse::BadRequest().json(data));
+        return Ok(HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data));
     }
 
     //  Const with bad options.
@@ -2241,11 +2496,14 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPICreateID={} oCMAPICreateType=Network",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],cdata);
                 let _ = logs::send_logs(logdata);
 
-                // Add correct headers.
-                let add_headers = ContentType::json();
+                // Fetch headers.
+                let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::Created().insert_header(add_headers).json(data) )
+                Ok( HttpResponse::Created()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
             else {
                 // Construct JSON object
@@ -2278,8 +2536,14 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
 
+                // Fetch headers.
+                let vheaders = api_headers();
+
                 // Return answer.
-                Ok( HttpResponse::BadRequest().json(data) )
+                Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
             }
         },
         // When error build response.
@@ -2314,8 +2578,14 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
             let _ = logs::send_logs(logdata);
 
+            // Fetch headers.
+            let vheaders = api_headers();
+
             // Return answer.
-            Ok( HttpResponse::InternalServerError().json(data) )
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
         }
     }
 }
