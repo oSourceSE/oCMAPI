@@ -38,3 +38,9 @@ logpath = ""
 # Required: Yes
 [env]
 envpath = ""
+
+# Path to temporary storage of secrets file when creating secrets.
+# The file is removed after succeffully creating the secret.
+# Required: Yes
+[secrets]
+secpath = ""

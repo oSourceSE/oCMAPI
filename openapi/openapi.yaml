@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.4
+  version: 1.0.5
   license:
     name: BSD License
     url: https://www.osource.se/license.html
@@ -478,8 +478,8 @@ paths:
 
         {
           "name": "filename",
-          "content", "USER=user|PASS=password",
-          "replace", "no"
+          "content": "USER=user|PASS=password",
+          "replace": "no"
         }
 
         ```
@@ -497,8 +497,8 @@ paths:
 
         {
           "name": "filename",
-          "content", "USER=user|PASS=password",
-          "replace", "yes"
+          "content": "USER=user|PASS=password",
+          "replace": "yes"
         }
 
         ```
@@ -511,6 +511,118 @@ paths:
                 name:
                   type: string
                 content:
+                  type: string
+                replace:
+                  type: string
+  /v1/common/postSecretCreate:
+    post:
+      summary: /v1/common/postSecretCreate
+      tags:
+        - Common
+      operationId: postSecretCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  data:
+                    type: string
+                  labels:
+                    type: string
+                  replace:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      security:
+        - BasicAuth: []
+      description: >-
+        Create or replace a `secret` with information used in containers, good
+        for moving variables like `usernames`, `passwords` and so on from the
+        create command when creating a container.
+
+
+        During the creation or replacement of a `secret` a temporary file is
+        placed under the folder assigned in the configuration file. This file
+        will automatically get the `.tmp` added at the end and the file should
+        be removed automatically when operation is successful.
+
+
+        the `data` tag is sent in as is into the secret so be sure to format it
+        correctly before it is processed.
+
+
+        For example:
+
+        ```
+
+        {
+          "name": "secretname",
+          "content": "MySecretPassword",
+          "labels": "<label1>=<string>,<label2>=<string>",
+          "replace": "no"
+        }
+
+        ```
+
+
+        You can overwrite an existing `secret` by setting the `replace` tag to
+        yes, otherwise it will not do anything if the `secret` already exists.
+        The `replace` tag can only consist of the words `yes` or `no`, if you
+        put something else here it will halt and error out.
+
+
+        for example:
+
+        ```
+
+        {
+          "name": "secretname",
+          "content": "MyNewSecretPassword",
+          "labels": "<label1>=<string>,<label2>=<string>",
+          "replace": "yes"
+        }
+
+        ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                data:
+                  type: string
+                labels:
                   type: string
                 replace:
                   type: string

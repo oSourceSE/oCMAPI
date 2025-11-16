@@ -43,3 +43,12 @@ pub struct EnvFile {
     pub content: String,
     pub replace: String,
 }
+
+// Model for secret.
+#[derive(Serialize,Deserialize)]
+pub struct CreateSecret {
+    pub name: String,
+    pub data: String,
+    pub labels: String,
+    pub replace: String,
+}

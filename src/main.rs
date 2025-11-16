@@ -89,6 +89,7 @@ async fn http_server() -> std::io::Result<()> {
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
+                    .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))
@@ -151,6 +152,7 @@ async fn https_server() -> std::io::Result<()> {
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
+                    .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))
@@ -206,5 +208,5 @@ fn main() {
         // Send server stop information to log.
         let logdata = format!("CEF:1|oCMAPI|API|1.0|100|Server Stopped|0|startTime=<starttime> src=127.0.0.1 dpt={} proto=TCP app=HTTP msg=Server stopped and is no longer listening for incoming traffic",config::SERVER_PORT.get().unwrap());
         let _ = logs::send_logs(logdata);
-    }     
+    }
 }

@@ -14,6 +14,7 @@ pub static CRED_USER: OnceLock<String> = OnceLock::new();
 pub static CRED_PASSWD: OnceLock<String> = OnceLock::new();
 pub static LOG_PATH: OnceLock<String> = OnceLock::new();
 pub static ENV_PATH: OnceLock<String> = OnceLock::new();
+pub static SEC_PATH: OnceLock<String> = OnceLock::new();
 
 // Read configuration from file.
 pub fn configuration(cfg_file: String) {
@@ -26,10 +27,11 @@ pub fn configuration(cfg_file: String) {
     struct Config {
         server: Server, // Match 'server' key in config file.
         certificate: Certificate, // Match 'certificate' key in config file.
-        session: Session, // Match 'session' key in config file
-        auth: Auth, // Match 'auth' key in config file
-        logs: Logs, // Match 'logs' key in config file
-        env: Env, // Match 'env' key in config file
+        session: Session, // Match 'session' key in config file.
+        auth: Auth, // Match 'auth' key in config file.
+        logs: Logs, // Match 'logs' key in config file.
+        env: Env, // Match 'env' key in config file.
+        secrets: Secrets, // Match 'secrets' key in config file.
     }
 
     // Get parameters from [Server] key.
@@ -67,10 +69,16 @@ pub fn configuration(cfg_file: String) {
         logpath: String,
     }
 
-    // Get parameters from [logs] key.
+    // Get parameters from [env] key.
     #[derive(Deserialize)]
     struct Env {
         envpath: String,
+    }
+
+    // Get parameters from [secrets] key.
+    #[derive(Deserialize)]
+    struct Secrets {
+        secpath: String,
     }
 
     // Check if load of config file is Ok and act accordingly.
@@ -94,6 +102,7 @@ pub fn configuration(cfg_file: String) {
     if config.auth.salt.trim().is_empty() { cfg_ok = false; }
     if config.session.cookiename.trim().is_empty() { cfg_ok = false; }
     if config.env.envpath.trim().is_empty() { cfg_ok = false; }
+    if config.secrets.secpath.trim().is_empty() { cfg_ok = false; }
     // Extra check for SSL
     if config.server.ssl.trim() == "yes" {
         if config.certificate.certfile.trim().is_empty() { cfg_ok = false; }
@@ -128,6 +137,8 @@ pub fn configuration(cfg_file: String) {
         let log_path: String = config.logs.logpath.trim().to_string();
         // Get env settings
         let env_path: String = config.env.envpath.trim().to_string();
+        // Get secrets settings
+        let sec_path: String = config.secrets.secpath.trim().to_string();
         // Spawn a thread and write to `OnceLock`.
         std::thread::spawn(|| {
             let _value = SERVER_ADDRESS.get_or_init(|| connect_string);
@@ -142,6 +153,7 @@ pub fn configuration(cfg_file: String) {
             let _value = CRED_PASSWD.get_or_init(|| cred_passwd);
             let _value = LOG_PATH.get_or_init(|| log_path);
             let _value = ENV_PATH.get_or_init(|| env_path);
+            let _value = SEC_PATH.get_or_init(|| sec_path);
         })
         .join()
         .unwrap();
