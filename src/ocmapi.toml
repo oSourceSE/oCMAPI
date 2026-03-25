@@ -40,7 +40,14 @@ logpath = ""
 envpath = ""
 
 # Path to temporary storage of secrets file when creating secrets.
-# The file is removed after succeffully creating the secret.
+# The file is removed after successfully creating the secret.
 # Required: Yes
 [secrets]
 secpath = ""
+
+# Special keys used when deleting data via API, each key is assigned to each endpoint.
+# Make sure it is long enough and with random characters.
+# Required: Yes
+[keys]
+envkey = ""
+seckey = ""

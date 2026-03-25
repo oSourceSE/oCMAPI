@@ -22,21 +22,21 @@ pub struct CreateNetwork {
     pub options: String,
 }
 
-// Model for container state.
+// Model for getting container state.
 #[derive(Serialize, Deserialize)]
 pub struct StateContainer {
     pub name: String,
     pub state: String,
 }
 
-// Model for pod state.
+// Model for getting pod state.
 #[derive(Serialize, Deserialize)]
 pub struct StatePod {
     pub name: String,
     pub state: String,
 }
 
-// Model for env file.
+// Model for creating env file.
 #[derive(Serialize, Deserialize)]
 pub struct EnvFile {
     pub name: String,
@@ -44,11 +44,25 @@ pub struct EnvFile {
     pub replace: String,
 }
 
-// Model for secret.
+// Model for creating secret.
 #[derive(Serialize,Deserialize)]
 pub struct CreateSecret {
     pub name: String,
     pub data: String,
     pub labels: String,
     pub replace: String,
+}
+
+// Model for deleting env file.
+#[derive(Serialize,Deserialize)]
+pub struct DelEnvFile {
+    pub name: String,
+    pub key: String,
+}
+
+// Model for deleting secrets file.
+#[derive(Serialize,Deserialize)]
+pub struct DelSecFile {
+    pub name: String,
+    pub key: String,
 }

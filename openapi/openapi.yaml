@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.5
+  version: 1.0.6
   license:
     name: BSD License
     url: https://www.osource.se/license.html
@@ -626,6 +626,130 @@ paths:
                   type: string
                 replace:
                   type: string
+  /v1/common/deleteEnvFile:
+    delete:
+      summary: /v1/common/deleteEnvFile
+      tags:
+        - Common
+      operationId: deleteEnvFile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: '200'
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: 400
+                Message: <string>
+                Error: <string>
+      security:
+        - BasicAuth: []
+      description: >-
+        Remove an `ENV` file from the server when it is not needed anymore.
+
+
+        To remove a `ENV` file a security key must be provided or it will not
+        let you delete the file.
+
+
+        The name of the file to delete is written without `.env`, this is added
+        automatically when doing the request.
+
+
+        For example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
+  /v1/common/deleteSecFile:
+    delete:
+      summary: /v1/common/deleteSecFile
+      tags:
+        - Common
+      operationId: deleteSecFile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      security:
+        - BasicAuth: []
+      description: >-
+        Remove an `secrets` file from the server when it for some reason is not automatically removed when creating it via the `API`.
+
+
+        To remove a `secrets` file a security key must be provided or it will
+        not let you delete the file.
+
+
+        The name of the file to delete is written without `.tmp`, this is added
+        automatically when doing the request.
+
+
+        For example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
   /v1/containers/getStatus:
     get:
       summary: /v1/containers/getStatus

@@ -1,12 +1,15 @@
 [package]
 name = "ocmapi"
-version = "1.0.5"
+version = "1.0.6"
 edition = "2024"
 
 [dependencies]
-actix-web = { version = "4.11.0", features = ["openssl", "rustls-0_23"] }
+bytes = "1.11.1"
+time = "0.3.47"
+rustls-webpki = "0.103.10"
+actix-web = { version = "4.13.0", features = ["openssl", "rustls-0_23"] }
 config-file = "0.2.3"
-rustls = { version = "0.23.35", features = ["aws_lc_rs"] }
+rustls = "0.23.37"
 rustls-pemfile = "2.2.0"
 serde = { version = "1.0.228", features = [ "std", "serde_derive", "derive"] }
 serde_json = { version = "1.0.145", features = [ "std" ] }
@@ -15,9 +18,10 @@ actix-web-httpauth = "0.8.2"
 constant_time_eq = "0.4.2"
 bcrypt-pbkdf = "0.10.0"
 lazy_static = "1.5.0"
-chrono = "0.4.42"
+chrono = "0.4.44"
 gethostname = "1.1.0"
 include_dir = "0.7.4"
-argh = "0.1.13"
-regex = "1.12.2"
-rand = "0.9.2"
+argh = "0.1.19"
+regex = "1.12.3"
+rand = "0.10.0"
+port_check = "0.3.0"

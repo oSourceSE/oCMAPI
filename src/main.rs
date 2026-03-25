@@ -8,7 +8,9 @@ use actix_web_httpauth::middleware::HttpAuthentication;
 use actix_web::cookie::{ Key, SameSite };
 use std::io::BufReader;
 use std::fs::{File};
+use std::process;
 use argh::FromArgs;
+use port_check::*;
 // Load local modules
 mod config;
 mod models;
@@ -44,6 +46,21 @@ fn show_version() {
 fn start_info() {
     println!("oCMAPI - Container Management API");
     println!("Listening on {}",config::SERVER_ADDRESS.get().unwrap());
+    // Check if port is in use before continuing.
+    if config::SERVER_ADDRESS.get().unwrap().contains("0.0.0.0") {
+        if is_port_reachable(format!("127.0.0.1:{}", config::SERVER_PORT.get().unwrap())) == true {
+            println!("Port is already in use, check you config...");
+            println!("Exiting...");
+            process::exit(1);
+        }
+    }
+    else {
+        if is_port_reachable(config::SERVER_ADDRESS.get().unwrap()) == true {
+            println!("Port is already in use, check you config och what is listening on that port...");
+            println!("Exiting...");
+            process::exit(1);
+        }
+    }
     println!("Running server...");
 }
 
@@ -90,6 +107,8 @@ async fn http_server() -> std::io::Result<()> {
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
+                    .route("/v1/common/deleteEnvFile", web::delete().guard(guard::Delete()).to(handlers::del_common_envfile))
+                    .route("/v1/common/deleteSecFile", web::delete().guard(guard::Delete()).to(handlers::del_common_secfile))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))
@@ -153,6 +172,8 @@ async fn https_server() -> std::io::Result<()> {
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
+                    .route("/v1/common/deleteEnvFile", web::delete().guard(guard::Delete()).to(handlers::del_common_envfile))
+                    .route("/v1/common/deleteSecFile", web::delete().guard(guard::Delete()).to(handlers::del_common_secfile))
                     // Containers API
                     .route("/v1/containers/getStatus", web::get().guard(guard::Get()).to(handlers::get_containers_status))
                     .route("/v1/containers/getStatus/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_status_query))

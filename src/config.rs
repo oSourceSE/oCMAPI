@@ -15,6 +15,8 @@ pub static CRED_PASSWD: OnceLock<String> = OnceLock::new();
 pub static LOG_PATH: OnceLock<String> = OnceLock::new();
 pub static ENV_PATH: OnceLock<String> = OnceLock::new();
 pub static SEC_PATH: OnceLock<String> = OnceLock::new();
+pub static ENV_KEY: OnceLock<String> = OnceLock::new();
+pub static SEC_ḰEY: OnceLock<String> = OnceLock::new();
 
 // Read configuration from file.
 pub fn configuration(cfg_file: String) {
@@ -32,6 +34,7 @@ pub fn configuration(cfg_file: String) {
         logs: Logs, // Match 'logs' key in config file.
         env: Env, // Match 'env' key in config file.
         secrets: Secrets, // Match 'secrets' key in config file.
+        keys: Keys, // Match 'keys' key in config file.
     }
 
     // Get parameters from [Server] key.
@@ -81,6 +84,13 @@ pub fn configuration(cfg_file: String) {
         secpath: String,
     }
 
+    // Get parameters deom [keys] key.
+    #[derive(Deserialize)]
+    struct Keys {
+        envkey: String,
+        seckey: String,
+    }
+
     // Check if load of config file is Ok and act accordingly.
     let config:Config = if Config::from_config_file(cfg_file.clone()).is_ok() {
         // If loaded Ok fetch the file.
@@ -103,6 +113,8 @@ pub fn configuration(cfg_file: String) {
     if config.session.cookiename.trim().is_empty() { cfg_ok = false; }
     if config.env.envpath.trim().is_empty() { cfg_ok = false; }
     if config.secrets.secpath.trim().is_empty() { cfg_ok = false; }
+    if config.keys.envkey.trim().is_empty() { cfg_ok = false; }
+    if config.keys.seckey.trim().is_empty() { cfg_ok = false; }
     // Extra check for SSL
     if config.server.ssl.trim() == "yes" {
         if config.certificate.certfile.trim().is_empty() { cfg_ok = false; }
@@ -129,16 +141,19 @@ pub fn configuration(cfg_file: String) {
         let privkey_string: String = config.certificate.keyfile.trim().to_string();
         // Get session settings.
         let cookie_name: String = config.session.cookiename.trim().to_string();
-        // Get credentials
+        // Get credentials.
         let cred_salt: String = config.auth.salt.trim().to_string();
         let cred_user: String = config.auth.username.trim().to_string();
         let cred_passwd: String = config.auth.password.trim().to_string();
-        // Get log settings
+        // Get log settings.
         let log_path: String = config.logs.logpath.trim().to_string();
-        // Get env settings
+        // Get env settings.
         let env_path: String = config.env.envpath.trim().to_string();
-        // Get secrets settings
+        // Get secrets settings.
         let sec_path: String = config.secrets.secpath.trim().to_string();
+        // Get keys settings.
+        let env_key: String = config.keys.envkey.trim().to_string();
+        let sec_key: String = config.keys.seckey.trim().to_string();
         // Spawn a thread and write to `OnceLock`.
         std::thread::spawn(|| {
             let _value = SERVER_ADDRESS.get_or_init(|| connect_string);
@@ -154,6 +169,8 @@ pub fn configuration(cfg_file: String) {
             let _value = LOG_PATH.get_or_init(|| log_path);
             let _value = ENV_PATH.get_or_init(|| env_path);
             let _value = SEC_PATH.get_or_init(|| sec_path);
+            let _value = ENV_KEY.get_or_init(|| env_key);
+            let _value = SEC_ḰEY.get_or_init(|| sec_key);
         })
         .join()
         .unwrap();
