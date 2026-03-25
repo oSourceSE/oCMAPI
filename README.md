@@ -25,7 +25,7 @@ The configuration file has information on what is required or not, the program w
 
 ## Usage
 
-The binary has been compiled on Ubuntu 24.04.3 LTS with Rust 1.89, but has been tested on Ubuntu 25.04 and with Podman 5.4.1.
+The binary has been compiled on `Ubuntu 24.04.4 LTS` with Rust 1.89, but has been tested on `Ubuntu 25.04` and with `Podman 5.4.2`.
 
 Follow these steps and you should be up and running in no time.
 
@@ -80,6 +80,10 @@ Endpoints:
 > /v1/common/postEnvFileCreate
 >
 > /v1/common/postSecretCreate
+>
+> /v1/common/deleteEnvFile
+>
+> /v1/common/deleteSecFile
 
 #### Containers
 
@@ -133,8 +137,4 @@ Options:
 
 ## TODO
 
-The following API:s are in the works and will be available shortly.
-
-* API for removing `secrets`.
-* API for inspecting `secrets`.
-* API for removing `Env` files.
+More API:s are in the works and will be available shortly.
