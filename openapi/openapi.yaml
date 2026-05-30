@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.6
+  version: 1.0.7
   license:
     name: BSD License
     url: https://www.osource.se/license.html
@@ -422,6 +422,164 @@ paths:
       security:
         - BasicAuth: []
       description: Get complete information about your podman environment.
+  /v1/common/getImageListShort:
+    get:
+      summary: /v1/common/getImageListShort
+      tags:
+        - Common
+      operationId: getImageListShort
+      responses:
+        '200':
+          description: OK
+          headers:
+            ':status':
+              schema:
+                type: integer
+            content-length:
+              schema:
+                type: integer
+            api-version:
+              schema:
+                type: integer
+            date:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: array
+                      items:
+                        type: string
+                    ImageSize:
+                      type: integer
+                    Created:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      security:
+        - BasicAuth: []
+      description: Get basic information about images existing on the server.
+  /v1/common/getImageListDetailed:
+    get:
+      summary: /v1/common/getImageListDetailed
+      tags:
+        - Common
+      operationId: getImageListDetailed
+      responses:
+        '200':
+          description: OK
+          headers:
+            ':status':
+              deprecated: false
+              schema: {}
+            content-length:
+              deprecated: false
+              schema: {}
+            api-version:
+              deprecated: false
+              schema: {}
+            date:
+              deprecated: false
+              schema: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Id:
+                      type: string
+                    ParentId:
+                      type: string
+                    RepoTags:
+                      type: boolean
+                      nullable: true
+                    RepoDigests:
+                      type: array
+                      items:
+                        type: string
+                    Size:
+                      type: integer
+                    SharedSize:
+                      type: integer
+                    VirtualSize:
+                      type: integer
+                    Labels:
+                      type: object
+                      properties:
+                        org.opencontainers.image.created:
+                          type: string
+                          format: date-time
+                        org.opencontainers.image.description:
+                          type: string
+                        org.opencontainers.image.documentation:
+                          type: string
+                          format: uri
+                        org.opencontainers.image.licenses:
+                          type: string
+                        org.opencontainers.image.revision:
+                          type: string
+                        org.opencontainers.image.source:
+                          type: string
+                          format: uri
+                        org.opencontainers.image.title:
+                          type: string
+                        org.opencontainers.image.url:
+                          type: string
+                          format: uri
+                        org.opencontainers.image.version:
+                          type: string
+                    Containers:
+                      type: integer
+                    Digest:
+                      type: string
+                      format: uri
+                    History:
+                      type: array
+                      items:
+                        type: string
+                    Names:
+                      type: array
+                      items:
+                        type: string
+                    Created:
+                      type: integer
+                    CreatedAt:
+                      type: string
+                      format: date-time
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      security:
+        - BasicAuth: []
+      description: Get detailed information about images existing on the server.
   /v1/common/postEnvFileCreate:
     post:
       summary: /v1/common/postEnvFileCreate

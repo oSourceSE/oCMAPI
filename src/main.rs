@@ -6,6 +6,8 @@ use actix_session::config::{ BrowserSession, CookieContentSecurity };
 use actix_session::storage::{ CookieSessionStore };
 use actix_web_httpauth::middleware::HttpAuthentication;
 use actix_web::cookie::{ Key, SameSite };
+use rustls::pki_types::{ CertificateDer, PrivatePkcs8KeyDer };
+use rustls_pki_types::pem::PemObject;
 use std::io::BufReader;
 use std::fs::{File};
 use std::process;
@@ -105,6 +107,8 @@ async fn http_server() -> std::io::Result<()> {
                     .route("/v1/common/getStats", web::get().guard(guard::Get()).to(handlers::get_common_stats))
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
+                    .route("/v1/common/getImageListShort", web::get().guard(guard::Get()).to(handlers::get_short_image_list))
+                    .route("/v1/common/getImageListDetailed", web::get().guard(guard::Get()).to(handlers::get_detailed_image_list))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
                     .route("/v1/common/deleteEnvFile", web::delete().guard(guard::Delete()).to(handlers::del_common_envfile))
@@ -142,8 +146,9 @@ async fn https_server() -> std::io::Result<()> {
     let mut key_file = BufReader::new(File::open(config::CERT_PRIVKEY.get().unwrap().trim()).unwrap());
 
     // load TLS certs and key
-    let tls_certs = rustls_pemfile::certs(&mut certs_file).collect::<Result<Vec<_>, _>>().unwrap();
-    let tls_key = rustls_pemfile::pkcs8_private_keys(&mut key_file).next().unwrap().unwrap();
+    let tls_certs = CertificateDer::pem_reader_iter(&mut certs_file).collect::<Result<Vec<_>, _>>().unwrap();
+    let tls_key = PrivatePkcs8KeyDer::pem_reader_iter(&mut key_file).next().unwrap().unwrap();
+
 
     // Build ServerConfig with certificate data.
     let tls_config = rustls::ServerConfig::builder()
@@ -170,6 +175,8 @@ async fn https_server() -> std::io::Result<()> {
                     .route("/v1/common/getStats", web::get().guard(guard::Get()).to(handlers::get_common_stats))
                     .route("/v1/common/getVersion", web::get().guard(guard::Get()).to(handlers::get_common_version))
                     .route("/v1/common/getInfo", web::get().guard(guard::Get()).to(handlers::get_common_info))
+                    .route("/v1/common/getImageListShort", web::get().guard(guard::Get()).to(handlers::get_short_image_list))
+                    .route("/v1/common/getImageListDetailed", web::get().guard(guard::Get()).to(handlers::get_detailed_image_list))
                     .route("/v1/common/postEnvFileCreate", web::post().guard(guard::Post()).to(handlers::post_common_envfile))
                     .route("/v1/common/postSecretCreate", web::post().guard(guard::Post()).to(handlers::post_common_secret))
                     .route("/v1/common/deleteEnvFile", web::delete().guard(guard::Delete()).to(handlers::del_common_envfile))

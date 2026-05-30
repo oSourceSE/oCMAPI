@@ -384,6 +384,190 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     }
 }
 
+// Get minimal image list.
+pub async fn get_short_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // The command.
+    let cmd = Command::new("podman")
+        .arg("image")
+        .arg("ls")
+        .arg(
+            "--format=
+            { \"Names\": {{json .Names}},
+            \"ImageSize\": {{json .VirtualSize}},
+            \"Created\": {{json .CreatedAt}} },"
+        )
+        .output();
+    // Check if command went ok or not.
+    match cmd {
+        // When Ok build response.
+        Ok(cmd_ok) => {
+            // Clean data from unneeded characters.
+            let data = format!("[{}]", String::from_utf8_lossy(&cmd_ok.stdout))
+            .replace(",\n]", "]");
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
+        },
+        // When error build response.
+        Err(cmd_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Message": "Bad Request: Could not process data",
+                    "Error": format!("{}", cmd_err),
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Internal Server Error",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
+// Get detailed image list.
+pub async fn get_detailed_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // The command.
+    let cmd = Command::new("podman")
+        .arg("image")
+        .arg("ls")
+        .arg("--format=json")
+        .output();
+    // Check if command went ok or not.
+    match cmd {
+        // When Ok build response.
+        Ok(cmd_ok) => {
+            // Clean data from unneeded characters.
+            let data = format!("{}", String::from_utf8_lossy(&cmd_ok.stdout));
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .body(data) )
+        },
+        // When error build response.
+        Err(cmd_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Message": "Bad Request: Could not process data",
+                    "Error": format!("{}", cmd_err),
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Internal Server Error",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
 // Post env file
 pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Get JSON data from post.
