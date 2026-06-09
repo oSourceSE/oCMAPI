@@ -25,7 +25,7 @@ The configuration file has information on what is required or not, the program w
 
 ## Usage
 
-The binary has been compiled on `Ubuntu 24.04.4 LTS` with Rust  1.91.1, but has been tested on `Ubuntu 25.04` and with `Podman 5.4.2`.
+The binary has been compiled on `Ubuntu 24.04.4 LTS` with Rust  1.91.1, but has been tested on `Ubuntu 25.10` and with `Podman 5.4.2`.
 
 Follow these steps and you should be up and running in no time.
 
@@ -88,6 +88,8 @@ Endpoints:
 > /v1/common/deleteEnvFile
 >
 > /v1/common/deleteSecFile
+>
+> /v1/common/deleteImages
 
 #### Containers
 
@@ -101,6 +103,10 @@ Endpoints:
 > /v1/containers/postContainerCreate
 >
 > /v1/containers/postSetState
+>
+> /v1/containers/deleteContainer
+>
+> /v1/containers/deleteVolume
 
 #### Pods
 
@@ -114,6 +120,8 @@ Endpoints:
 > /v1/pods/postPodCreate
 >
 > /v1/pods/postSetState
+>
+> /v1/pods/deletePod
 
 #### Networks
 
@@ -125,6 +133,8 @@ Endpoints:
 > /v1/networks/getInfo/\<id\>
 >
 > /v1/networks/postNetworkCreate
+>
+> /v1/networks/deleteNetwork
 
 ## Command line options
 
