@@ -15,8 +15,10 @@ pub static CRED_PASSWD: OnceLock<String> = OnceLock::new();
 pub static LOG_PATH: OnceLock<String> = OnceLock::new();
 pub static ENV_PATH: OnceLock<String> = OnceLock::new();
 pub static SEC_PATH: OnceLock<String> = OnceLock::new();
-pub static ENV_KEY: OnceLock<String> = OnceLock::new();
-pub static SEC_ḰEY: OnceLock<String> = OnceLock::new();
+pub static COMMON_KEY: OnceLock<String> = OnceLock::new();
+pub static CONTAINERS_KEY: OnceLock<String> = OnceLock::new();
+pub static PODS_KEY: OnceLock<String> = OnceLock::new();
+pub static NETWORKS_KEY: OnceLock<String> = OnceLock::new();
 
 // Read configuration from file.
 pub fn configuration(cfg_file: String) {
@@ -87,8 +89,10 @@ pub fn configuration(cfg_file: String) {
     // Get parameters deom [keys] key.
     #[derive(Deserialize)]
     struct Keys {
-        envkey: String,
-        seckey: String,
+        common_security_key: String,
+        containers_security_key: String,
+        pods_security_key: String,
+        networks_security_key: String,
     }
 
     // Check if load of config file is Ok and act accordingly.
@@ -113,8 +117,10 @@ pub fn configuration(cfg_file: String) {
     if config.session.cookiename.trim().is_empty() { cfg_ok = false; }
     if config.env.envpath.trim().is_empty() { cfg_ok = false; }
     if config.secrets.secpath.trim().is_empty() { cfg_ok = false; }
-    if config.keys.envkey.trim().is_empty() { cfg_ok = false; }
-    if config.keys.seckey.trim().is_empty() { cfg_ok = false; }
+    if config.keys.common_security_key.trim().is_empty() { cfg_ok = false; }
+    if config.keys.containers_security_key.trim().is_empty() { cfg_ok = false; }
+    if config.keys.pods_security_key.trim().is_empty() { cfg_ok = false; }
+    if config.keys.networks_security_key.trim().is_empty() { cfg_ok = false; }
     // Extra check for SSL
     if config.server.ssl.trim() == "yes" {
         if config.certificate.certfile.trim().is_empty() { cfg_ok = false; }
@@ -152,8 +158,10 @@ pub fn configuration(cfg_file: String) {
         // Get secrets settings.
         let sec_path: String = config.secrets.secpath.trim().to_string();
         // Get keys settings.
-        let env_key: String = config.keys.envkey.trim().to_string();
-        let sec_key: String = config.keys.seckey.trim().to_string();
+        let common_key: String = config.keys.common_security_key.trim().to_string();
+        let containers_key: String = config.keys.containers_security_key.trim().to_string();
+        let pods_key: String = config.keys.pods_security_key.trim().to_string();
+        let networks_key: String = config.keys.networks_security_key.trim().to_string();
         // Spawn a thread and write to `OnceLock`.
         std::thread::spawn(|| {
             let _value = SERVER_ADDRESS.get_or_init(|| connect_string);
@@ -169,8 +177,10 @@ pub fn configuration(cfg_file: String) {
             let _value = LOG_PATH.get_or_init(|| log_path);
             let _value = ENV_PATH.get_or_init(|| env_path);
             let _value = SEC_PATH.get_or_init(|| sec_path);
-            let _value = ENV_KEY.get_or_init(|| env_key);
-            let _value = SEC_ḰEY.get_or_init(|| sec_key);
+            let _value = COMMON_KEY.get_or_init(|| common_key);
+            let _value = CONTAINERS_KEY.get_or_init(|| containers_key);
+            let _value = PODS_KEY.get_or_init(|| pods_key);
+            let _value = NETWORKS_KEY.get_or_init(|| networks_key);
         })
         .join()
         .unwrap();

@@ -45,9 +45,12 @@ envpath = ""
 [secrets]
 secpath = ""
 
-# Special keys used when deleting data via API, each key is assigned to each endpoint.
+# Special security keys used when deleting data via API, each key is assigned
+# to each main endpoint path.
 # Make sure it is long enough and with random characters.
 # Required: Yes
 [keys]
-envkey = ""
-seckey = ""
+common_security_key = ""
+containers_security_key = ""
+pods_security_key = ""
+networks_security_key = ""

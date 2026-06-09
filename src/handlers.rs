@@ -7,8 +7,8 @@ use include_dir::{include_dir, Dir};
 use regex::Regex;
 use rand::{RngExt};
 // Load local modules
-use crate::{config::{ENV_KEY, SEC_ḰEY, ENV_PATH, SEC_PATH}};
-use crate::{models::{ CreateContainer, CreateNetwork, CreatePod, CreateSecret, DelSecFile, DelEnvFile, EnvFile, StateContainer, StatePod }};
+use crate::{config::{COMMON_KEY, CONTAINERS_KEY, PODS_KEY, NETWORKS_KEY, ENV_PATH, SEC_PATH}};
+use crate::{models::{*}};
 use crate::logs;
 
 // Collection of common headers for API responses.
@@ -385,7 +385,7 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
 }
 
 // Get minimal image list.
-pub async fn get_short_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn get_common_short_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // The command.
     let cmd = Command::new("podman")
         .arg("image")
@@ -480,7 +480,7 @@ pub async fn get_short_image_list(reqdata: HttpRequest) -> io::Result<HttpRespon
 }
 
 // Get detailed image list.
-pub async fn get_detailed_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn get_common_detailed_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // The command.
     let cmd = Command::new("podman")
         .arg("image")
@@ -569,7 +569,7 @@ pub async fn get_detailed_image_list(reqdata: HttpRequest) -> io::Result<HttpRes
 }
 
 // Post env file
-pub async fn post_common_envfile(sdata: web::Json<EnvFile>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Get JSON data from post.
     let jdata = sdata.into_inner();
 
@@ -1309,7 +1309,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
 }
 
 // Delete env file
-pub async fn del_common_envfile(sdata: web::Json<DelEnvFile>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Get JSON data from post.
     let jdata = sdata.into_inner();
 
@@ -1365,7 +1365,7 @@ pub async fn del_common_envfile(sdata: web::Json<DelEnvFile>, reqdata: HttpReque
     let file_exist = Path::new(full_path.as_str()).exists();
 
     // Check if secret isn´t empty and not matching key from config.
-    if jdata.key.is_empty() || jdata.key != ENV_KEY.get().unwrap().to_string() {
+    if jdata.key.is_empty() || jdata.key != COMMON_KEY.get().unwrap().to_string() {
         // Construct JSON object
         let data = json!(
             {
@@ -1408,7 +1408,7 @@ pub async fn del_common_envfile(sdata: web::Json<DelEnvFile>, reqdata: HttpReque
     }
 
     // Match key to make sure it is correct and see if file exist.
-    if jdata.key == ENV_KEY.get().unwrap().to_string() || file_exist {
+    if jdata.key == COMMON_KEY.get().unwrap().to_string() || file_exist {
         // Remove file.
         let result = remove_file(full_path);
 
@@ -1541,7 +1541,7 @@ pub async fn del_common_envfile(sdata: web::Json<DelEnvFile>, reqdata: HttpReque
 }
 
 // Delete secrets file
-pub async fn del_common_secfile(sdata: web::Json<DelSecFile>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Get JSON data from post.
     let jdata = sdata.into_inner();
 
@@ -1597,7 +1597,7 @@ pub async fn del_common_secfile(sdata: web::Json<DelSecFile>, reqdata: HttpReque
     let file_exist = Path::new(full_path.as_str()).exists();
 
     // Check if secret isn´t empty and not matching key from config.
-    if jdata.key.is_empty() || jdata.key != SEC_ḰEY.get().unwrap().to_string() {
+    if jdata.key.is_empty() || jdata.key != COMMON_KEY.get().unwrap().to_string() {
         // Construct JSON object
         let data = json!(
             {
@@ -1640,7 +1640,7 @@ pub async fn del_common_secfile(sdata: web::Json<DelSecFile>, reqdata: HttpReque
     }
 
     // Match key to make sure it is correct and see if file exist.
-    if jdata.key == SEC_ḰEY.get().unwrap().to_string() || file_exist {
+    if jdata.key == COMMON_KEY.get().unwrap().to_string() || file_exist {
         // Remove file.
         let result = remove_file(full_path);
 
@@ -1764,6 +1764,143 @@ pub async fn del_common_secfile(sdata: web::Json<DelSecFile>, reqdata: HttpReque
         // Fetch headers.
         let vheaders = api_headers();
 
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+}
+
+// Delete unused images
+pub async fn delete_common_images(sdata: web::Json<DeleteImages>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner(); 
+
+    // Match key to make sure it is correct.
+    if jdata.key == COMMON_KEY.get().unwrap().to_string() {
+
+        // Prune images.
+        let cmd = Command::new("podman")
+            .arg("image")
+            .arg("prune")
+            .arg("--all")
+            .arg("--force")
+            .status()
+            .expect("Ignore Output...");
+
+        // Check exit code to see if prune command went OK or not.
+        // Exit codes: 0 = OK, all else not OK.
+        match cmd.code() {
+            Some(0) => {
+                // Construct JSON object.
+                let data = json!(
+                    {
+                        "Code": "200",
+                        "Name": "Unused images has been deleted",
+                        "State": "Deleted"
+                    }
+                );   
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIDeleteID={} oCMAPIDeleteType=PruneImages",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],"0");
+                let _ = logs::send_logs(logdata);
+                // Fetch headers.
+                let vheaders = api_headers();
+                // Return answer.
+                Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
+            },
+            _ => {
+                // Construct JSON object
+                let data = json!(
+                    {
+                        "Code": 400,
+                        "Message": "Bad Request: Please check you data",
+                        "Error": "Invalid Information"
+                    }
+                );
+
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
+                // Return answer.
+                return Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            }
+        }
+    }
+    else {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Bad Request: Please check your input",
+                "Error": "Invalid Information"
+            }
+        );
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+        // Fetch headers.
+        let vheaders = api_headers();
         // Return answer.
         return Ok( HttpResponse::BadRequest()
             .append_header(("api-version",vheaders[0].clone()))
@@ -2544,6 +2681,525 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
     }
 }
 
+// Delete container.
+pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters.
+    let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+    
+    // Check if regex matches anything in name.
+    if rx_name.find(jdata.name.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Name provided is not in correct format.",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Check if secret isn´t empty and not matching key from config.
+    if jdata.key.is_empty() || jdata.key != CONTAINERS_KEY.get().unwrap().to_string() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check you data",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Match key to make sure it is correct.
+    if jdata.key == CONTAINERS_KEY.get().unwrap().to_string() {
+        // Container filter.
+        let cfilter = format!("name={}", jdata.name);
+
+        // Check if container is stopped, if not abort.
+        let cmdrunning = Command::new("podman")
+            .arg("container")
+            .arg("ps")
+            .arg("--all")
+            .arg("--filter")
+            .arg(cfilter)
+            .arg("--format='{{ .State }}'")
+            .output()?;
+        
+        // Convert result to string.
+        let state = format!("[{}]", String::from_utf8_lossy(&cmdrunning.stdout)).replace("['", "").replace("'\n]", "");
+
+        // Check if file could be deleted.
+        match state.as_str() {
+            "exited" => {
+                // Command, return name of the container if successful.
+                let cmd = Command::new("podman")
+                    .arg("container")
+                    .arg("rm")
+                    .arg(jdata.name.clone())
+                    .output()?;
+
+                // Convert result to string.
+                let result = format!("[{}]", String::from_utf8_lossy(&cmd.stdout)).replace("[", "").replace("\n]", "");
+
+                // Check return status of the command.
+                if result == jdata.name {
+                    // Construct JSON object.
+                    let data = json!(
+                        {
+                            "Code": "200",
+                            "Name": format!("Container '{}' has been deleted",jdata.name),
+                            "State": "Deleted"
+                        }
+                    );
+
+                    // Get USER-AGENT from request header, ugly but works.
+                    let mut ua_string = String::new();
+                    for v in reqdata.headers().get_all(USER_AGENT) {
+                        ua_string = format!("{:?}",v);
+                    };
+                    // Vec for HttpRequest data to log.
+                    // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                    let vlogdata = vec![
+                        reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                        reqdata.connection_info().scheme().to_string(),
+                        reqdata.path().to_string(),
+                        reqdata.connection_info().host().to_string(),
+                        ua_string
+                    ];
+
+                    // Get log function and put requierd data into it.
+                    let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"DELETE",vlogdata);
+                    // Send information to log.
+                    let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIDeleteID={} oCMAPIDeleteType=container",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name);
+                    let _ = logs::send_logs(logdata);
+
+                    // Fetch headers.
+                    let vheaders = api_headers();
+
+                    // Return answer.
+                    Ok( HttpResponse::Ok()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .json(data) )
+
+                }
+                else {
+
+                // Construct JSON object
+                let data = json!(
+                    {
+                        "Code": 400,
+                        "Message": "Please check you data",
+                        "Error": "Bad Request"
+                    }
+                );
+            
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+            
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+            
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+            
+                // Fetch headers.
+                let vheaders = api_headers();
+            
+                // Return answer.
+                return Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) )
+
+                }
+            },
+            _ => {
+                // Construct JSON object
+                let data = json!(
+                    {
+                        "Code": 400,
+                        "Message": "Container is not in 'exited' state or do not exist",
+                        "Error": "Bad Request"
+                    }
+                );
+            
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+            
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+            
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+            
+                // Fetch headers.
+                let vheaders = api_headers();
+            
+                // Return answer.
+                return Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            }
+        }
+    }
+    else {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check your input",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+}
+
+// Delete volumes.
+pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters.
+    let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+    
+    // Check if regex matches anything in name.
+    if rx_name.find(jdata.name.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Name provided is not in correct format.",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Check if secret isn´t empty and not matching key from config.
+    if jdata.key.is_empty() || jdata.key != CONTAINERS_KEY.get().unwrap().to_string() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check you data",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Match key to make sure it is correct.
+    if jdata.key == CONTAINERS_KEY.get().unwrap().to_string() {
+
+        // Command, return name of the container if successful.
+        let cmd = Command::new("podman")
+            .arg("volume")
+            .arg("rm")
+            .arg(jdata.name.clone())
+            .output()
+            .expect("Exit code 0...");
+        
+        // Check exit code.
+        match cmd.status.code() {
+            Some(0) => {
+                // Construct JSON object.
+                let data = json!(
+                    {
+                        "Code": "200",
+                        "Name": format!("Volume '{}' has been deleted",jdata.name),
+                        "State": "Deleted"
+                    }
+                );
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIDeleteID={} oCMAPIDeleteType=volume",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name);
+                let _ = logs::send_logs(logdata);
+                // Fetch headers.
+                let vheaders = api_headers();
+                // Return answer.
+                return Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            },
+            _ => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Message": format!("Cannot remove volume '{}', still used or do not exist",jdata.name),
+                    "Error": "Bad Request",
+                }
+            );
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+            }
+        }
+    }
+    else {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check your input",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+}
+
 /* --- Pods API --- */
 
 // Get all Pods status information.
@@ -3307,6 +3963,277 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
     }
 }
 
+// Delete Pod data.
+pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters.
+    let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+    
+    // Check if regex matches anything in name.
+    if rx_name.find(jdata.name.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Bad Request: Name provided is not in correct format.",
+                "Error": "Invalid Information"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Check if secret isn´t empty and not matching key from config.
+    if jdata.key.is_empty() || jdata.key != PODS_KEY.get().unwrap().to_string() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check you data",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Match key to make sure it is correct.
+    if jdata.key == PODS_KEY.get().unwrap().to_string() {
+        // Command.
+        let cmd_get= format!("podman pod ps --format='{{{{ .NumberOfContainers }}}}' --filter name='{}' --ctr-names",jdata.name);
+        let output = fake_tty::bash_command(cmd_get.as_str()).unwrap()
+            .output()
+            .expect("Number of attached containers...");
+
+        // Get data and convert.
+        let strsum = fake_tty::get_stdout(output.stdout).unwrap_or_default();
+        let getsum: i32 = strsum.trim().parse().unwrap_or_default();
+
+        // Only remove when there are one container attached, should be the *infra*.
+        if getsum == 1 {
+            // Command
+            let cmd_remove = Command::new("podman")
+            .arg("pod")
+            .arg("rm")
+            .arg(jdata.name.clone())
+            .output()
+            .expect("Return code 0...");
+
+            // Check result.
+            match cmd_remove.status.code() {
+                Some(0) => {
+                    // Construct JSON object.
+                    let data = json!(
+                        {
+                            "Code": "200",
+                            "Name": format!("Pod '{}' has been deleted",jdata.name),
+                            "State": "Deleted"
+                        }
+                    );
+                    // Get USER-AGENT from request header, ugly but works.
+                    let mut ua_string = String::new();
+                    for v in reqdata.headers().get_all(USER_AGENT) {
+                        ua_string = format!("{:?}",v);
+                    };
+                    // Vec for HttpRequest data to log.
+                    // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                    let vlogdata = vec![
+                        reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                        reqdata.connection_info().scheme().to_string(),
+                        reqdata.path().to_string(),
+                        reqdata.connection_info().host().to_string(),
+                        ua_string
+                    ];
+                    // Get log function and put requierd data into it.
+                    let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"DELETE",vlogdata);
+                    // Send information to log.
+                    let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIDeleteID={} oCMAPIDeleteType=pod",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name);
+                    let _ = logs::send_logs(logdata);
+                    // Fetch headers.
+                    let vheaders = api_headers();
+                    // Return answer.
+                    return Ok( HttpResponse::Ok()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .json(data) );
+                },
+                _ => {
+                    // Construct JSON object
+                    let data = json!(
+                        {
+                            "Code": 400,
+                            "Message": format!("Cannot remove pod '{}'",jdata.name),
+                            "Error": "Bad Request",
+                        }
+                    );
+                    // Get USER-AGENT from request header, ugly but works.
+                    let mut ua_string = String::new();
+                    for v in reqdata.headers().get_all(USER_AGENT) {
+                        ua_string = format!("{:?}",v);
+                    };
+                    // Vec for HttpRequest data to log.
+                    // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                    let vlogdata = vec![
+                        reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                        reqdata.connection_info().scheme().to_string(),
+                        reqdata.path().to_string(),
+                        reqdata.connection_info().host().to_string(),
+                        ua_string
+                    ];
+                    // Get log function and put requierd data into it.
+                    let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+                    // Send information to log.
+                    let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                    let _ = logs::send_logs(logdata);
+                    // Fetch headers.
+                    let vheaders = api_headers();
+                    // Return answer.
+                    return Ok( HttpResponse::BadRequest()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .json(data) );
+                }
+            }
+        }
+        else {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Message": format!("Cannot remove pod '{}' check your data",jdata.name),
+                    "Error": "Bad Request",
+                }
+            );
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+        }
+    }
+    else {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check your input",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+}
+
 /* --- Networks API --- */
 
 // Get network information.
@@ -3796,5 +4723,321 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
                 .content_type(vheaders[1].clone())
                 .json(data) )
         }
+    }
+}
+
+// Delete networks
+pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters.
+    let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+    
+    // Check if regex matches anything in name.
+    if rx_name.find(jdata.name.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Bad Request: Name provided is not in correct format.",
+                "Error": "Invalid Information"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Check if secret isn´t empty and not matching key from config.
+    if jdata.key.is_empty() || jdata.key != NETWORKS_KEY.get().unwrap().to_string() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check you data",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // Match key to make sure it is correct.
+    if jdata.key == NETWORKS_KEY.get().unwrap().to_string() {
+        // Command
+        let cmd_connected = Command::new("podman")
+            .arg("network")
+            .arg("inspect")
+            .arg(jdata.name.clone())
+            .arg("--format='{{json .Containers }}'")
+            .output();
+
+        // Check if network has containers attached.
+        match cmd_connected {
+            Ok (cmd_ok) => {
+                // Check length of stdout, returns empty response when no container is connected.
+                let count = cmd_ok.stdout.len();
+                if count > 6 {
+                    // Build JSON response.
+                    let data = json!(
+                        {
+                            "Code": 400,
+                            "Message": format!("Network '{}' has containers attached or do not exist",jdata.name),
+                            "Error": "Bad Request"
+                        }
+                    );
+
+                    // Get USER-AGENT from request header, ugly but works.
+                    let mut ua_string = String::new();
+                    for v in reqdata.headers().get_all(USER_AGENT) {
+                        ua_string = format!("{:?}",v)
+                    };
+                    // Vec for HttpRequest data to log.
+                    // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                    let vlogdata = vec![
+                        reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                        reqdata.connection_info().scheme().to_string(),
+                        reqdata.path().to_string(),
+                        reqdata.connection_info().host().to_string(),
+                        ua_string
+                    ];
+
+                    // Get log function and put requierd data into it.
+                    let vlog: Vec<String> = logs::log_data(400,"Bad Request",0,"GET",vlogdata);
+                    // Send information to log.
+                    let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                    let _ = logs::send_logs(logdata);
+
+                    // Fetch headers.
+                    let vheaders = api_headers();
+
+                    // Return answer.
+                    return Ok( HttpResponse::BadRequest()
+                        .append_header(("api-version",vheaders[0].clone()))
+                        .content_type(vheaders[1].clone())
+                        .json(data) );
+                }
+            },
+            Err(cmd_err) => {
+                // Construct JSON object
+                let data = json!(
+                    {
+                        "Code": 400,
+                        "Message": format!("{}", cmd_err),
+                        "Error": "Bad Request",
+                    }
+                );
+
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
+                // Return answer.
+                return Ok( HttpResponse::BadRequest()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            }
+        };
+
+        // Remove network if not attached.
+        let cmd_remove = Command::new("podman")
+            .arg("network")
+            .arg("rm")
+            .arg(jdata.name.clone())
+            .status()
+            .expect("Ok exit code...");
+        match cmd_remove.code() {
+            Some(0) => {
+                // Construct JSON object.
+                let data = json!(
+                    {
+                        "Code": "200",
+                        "Name": format!("Network '{}' has been deleted",jdata.name),
+                        "State": "Deleted"
+                    }
+                );
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"DELETE",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={} oCMAPIDeleteID={} oCMAPIDeleteType=network",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9],jdata.name);
+                let _ = logs::send_logs(logdata);
+                // Fetch headers.
+                let vheaders = api_headers();
+                // Return answer.
+                return Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            },
+            _ => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Message": format!("Cannot remove network '{}', still connected or do not exist",jdata.name),
+                    "Error": "Bad Request",
+                }
+            );
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+            }
+        }
+    }
+    else {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Message": "Please check your input",
+                "Error": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
     }
 }

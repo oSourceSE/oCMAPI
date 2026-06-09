@@ -1,6 +1,6 @@
 [package]
 name = "ocmapi"
-version = "1.0.7"
+version = "1.0.8"
 edition = "2024"
 
 [dependencies]
@@ -25,3 +25,4 @@ regex = "1.12.3"
 rand = "0.10.1"
 port_check = "0.3.0"
 rustls-pki-types = "1.14.1"
+fake-tty = "0.3.1"

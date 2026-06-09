@@ -38,7 +38,7 @@ pub struct StatePod {
 
 // Model for creating env file.
 #[derive(Serialize, Deserialize)]
-pub struct EnvFile {
+pub struct CreateEnvFile {
     pub name: String,
     pub content: String,
     pub replace: String,
@@ -55,14 +55,47 @@ pub struct CreateSecret {
 
 // Model for deleting env file.
 #[derive(Serialize,Deserialize)]
-pub struct DelEnvFile {
+pub struct DeleteEnvFile {
     pub name: String,
     pub key: String,
 }
 
 // Model for deleting secrets file.
 #[derive(Serialize,Deserialize)]
-pub struct DelSecFile {
+pub struct DeleteSecFile {
+    pub name: String,
+    pub key: String,
+}
+
+// Model for deleting a container.
+#[derive(Serialize,Deserialize)]
+pub struct DeleteContainer {
+    pub name: String,
+    pub key: String,
+}
+
+// Model for deleting unused images.
+#[derive(Serialize,Deserialize)]
+pub struct DeleteImages {
+    pub key: String,
+}
+
+// Model for deleteing network.
+#[derive(Serialize,Deserialize)]
+pub struct DeleteNetwork {
+    pub name: String,
+    pub key: String,
+}
+
+// Model for deleteing volume
+#[derive(Serialize,Deserialize)]
+pub struct DeleteVolume {
+    pub name: String,
+    pub key: String,
+}
+
+#[derive(Serialize,Deserialize)]
+pub struct DeletePod {
     pub name: String,
     pub key: String,
 }

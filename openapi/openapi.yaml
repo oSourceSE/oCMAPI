@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.7
+  version: 1.0.8
   license:
     name: BSD License
     url: https://www.osource.se/license.html
@@ -908,6 +908,56 @@ paths:
         }
 
          ```
+  /v1/common/deleteImages:
+    delete:
+      summary: /v1/common/deleteImages
+      operationId: deleteImages
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      tags:
+        - Common
+      security:
+        - BasicAuth: []
+      description: >-
+        Prunes all unused `images` from the server when when they are no longer
+        needed.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "key": "secretkey"
+        }
+
+         ```
   /v1/containers/getStatus:
     get:
       summary: /v1/containers/getStatus
@@ -1446,6 +1496,142 @@ paths:
                   type: string
                 state:
                   type: string
+  /v1/containers/deleteContainer:
+    delete:
+      summary: /v1/containers/deleteContainer
+      operationId: deleteContainer
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      tags:
+        - Containers
+      security:
+        - BasicAuth: []
+      description: >-
+        Deletes a container when it is no longer needed.
+
+
+        The container must be in `exited` state or it will be considered as
+        unremovable, this is to put some safeguards in place.
+
+
+        Volumes and networks are not removed via this API, they must be removed
+        separately via two other API calls.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                key:
+                  type: string
+  /v1/containers/deleteVolume:
+    delete:
+      summary: /v1/containers/deleteVolume
+      operationId: deleteVolume
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      tags:
+        - Containers
+      security:
+        - BasicAuth: []
+      description: >-
+        Removes a named volume.
+
+
+        The removal of a volume can only occur if it is not attached tp any
+        container, this to safeguard against some accidental removals.
+
+
+        Container that the volume is connected to must be removed first via
+        antoher API call.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                key:
+                  type: string
   /v1/pods/getStatus:
     get:
       summary: /v1/pods/getStatus
@@ -1946,6 +2132,61 @@ paths:
                   type: string
                 state:
                   type: string
+  /v1/pods/deletePod:
+    delete:
+      summary: /v1/pods/deletePod
+      operationId: deletePod
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      tags:
+        - Pods
+      security:
+        - BasicAuth: []
+      description: >-
+        Removes a network.
+
+
+        This API gives you the option to delete an unused network, if the
+        network is connected to a container it can not be removed, this to have
+        some safeguard against accidental removals.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
   /v1/networks/getInfo:
     get:
       summary: /v1/networks/getInfo
@@ -2137,6 +2378,61 @@ paths:
                   type: string
                 options:
                   type: string
+  /v1/networks/deleteNetwork:
+    delete:
+      summary: /v1/networks/deleteNetwork
+      operationId: deleteNetwork
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: integer
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+      tags:
+        - Networks
+      security:
+        - BasicAuth: []
+      description: >-
+        Removes a network.
+
+
+        This API gives you the option to delete an unused network, if the
+        network is connected to a container it can not be removed, this to have
+        some safeguard against accidental removals.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
 components:
   securitySchemes:
     BasicAuth:
