@@ -85,6 +85,12 @@ Endpoints:
 >
 > /v1/common/postSecretCreate
 >
+> /v1/common/postGetRepoImage
+>
+> /v1/common/postRepoAuthLogin
+>
+> /v1/common/postRepoAuthLogout
+> 
 > /v1/common/deleteEnvFile
 >
 > /v1/common/deleteSecFile
@@ -96,9 +102,9 @@ Endpoints:
 All interfaces related to container management resides under here.
 
 Endpoints:
-> /v1/containers/getStatus
+> /v1/containers/getState
 >
-> /v1/containers/getStatus/\<id\>
+> /v1/containers/getState/\<id\>
 >
 > /v1/containers/postContainerCreate
 >
@@ -113,9 +119,9 @@ Endpoints:
 All interfaces related to pod management resides under here.
 
 Endpoints:
-> /v1/pods/getStatus
+> /v1/pods/getState
 >
-> /v1/pods/getStatus/\<id\>
+> /v1/pods/getState/\<id\>
 >
 > /v1/pods/postPodCreate
 >
