@@ -1,28 +1,20 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.0.8
-  license:
-    name: BSD License
-    url: https://www.osource.se/license.html
-  description: >-
-    Container Management API for podman containers.
-
-
-    A project sprung out of the urge to learn rust and wanting to build a `API`
-    for managing `podman` containers in my local environment.
-
-
-    All requests and responses are JSON based for all API endpoints.
-servers:
-  - url: ''
+  version: 1.0.9
+  license: 
+   name: BSD License
+   url: https://www.osource.se/license.html
 paths:
   /v1/common/getStats:
     get:
-      summary: /v1/common/getStats
+      summary: getStats
+      operationId: ocmapi_common_getstats_yml
+      description: >-
+        Get current statistics for CPU, Memory and so on for all running
+        containers.
       tags:
         - Common
-      operationId: getLiveStatistics
       responses:
         '200':
           description: OK
@@ -53,6 +45,17 @@ paths:
                       type: string
                     pids:
                       type: string
+              example:
+                - id: <string>
+                  name: <string>
+                  cpu_time: <string>
+                  cpu_percent: <string>
+                  avg_cpu: <string>
+                  mem_usage: <string>
+                  mem_percent: <string>
+                  net_io: <string>
+                  block_io: <string>
+                  pids: <string>
         '400':
           description: Bad Request
           content:
@@ -61,71 +64,32 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: >-
-        Get current statistics for CPU, Memory and so on for all running
-        containers.
-  /v1/common/getVersion:
-    get:
-      summary: /v1/common/getVersion
-      tags:
-        - Common
-      operationId: getPodmanVersion
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Client:
-                    type: object
-                    properties:
-                      APIVersion:
-                        type: string
-                      Version:
-                        type: string
-                      GoVersion:
-                        type: string
-                      GitCommit:
-                        type: string
-                      BuiltTime:
-                        type: string
-                      Built:
-                        type: integer
-                      OsArch:
-                        type: string
-                      Os:
-                        type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-      security:
-        - BasicAuth: []
-      description: Get information about your current version of podman.
+        - getstats: []
   /v1/common/getInfo:
     get:
-      summary: /v1/common/getInfo
+      summary: getInfo
+      operationId: ocmapi_common_getinfo_yml
+      description: Get complete information about your podman environment.
       tags:
         - Common
-      operationId: getPodmanInfo
       responses:
         '200':
           description: OK
@@ -406,6 +370,141 @@ paths:
                         type: string
                       Os:
                         type: string
+              example:
+                host:
+                  arch: <string>
+                  buildahVersion: <string>
+                  cgroupManager: <string>
+                  cgroupVersion: <string>
+                  cgroupControllers:
+                    - <string>
+                    - <string>
+                  conmon:
+                    package: <string>
+                    path: <string>
+                    version: <string>
+                  cpus: <string>
+                  cpuUtilization:
+                    userPercent: <string>
+                    systemPercent: <string>
+                    idlePercent: <string>
+                  databaseBackend: <string>
+                  distribution:
+                    distribution: <string>
+                    version: <string>
+                    codename: <string>
+                  eventLogger: <string>
+                  freeLocks: <string>
+                  hostname: <string>
+                  idMappings:
+                    gidmap:
+                      - container_id: <string>
+                        host_id: <string>
+                        size: <string>
+                      - container_id: <string>
+                        host_id: <string>
+                        size: <string>
+                    uidmap:
+                      - container_id: <string>
+                        host_id: <string>
+                        size: <string>
+                      - container_id: <string>
+                        host_id: <string>
+                        size: <string>
+                  kernel: <string>
+                  logDriver: <string>
+                  memFree: <string>
+                  memTotal: <string>
+                  networkBackend: <string>
+                  networkBackendInfo:
+                    backend: <string>
+                    version: <string>
+                    package: <string>
+                    path: <string>
+                    dns:
+                      version: <string>
+                      package: <string>
+                      path: <string>
+                  ociRuntime:
+                    name: <string>
+                    package: <string>
+                    path: <string>
+                    version: <string>
+                  os: <string>
+                  remoteSocket:
+                    path: <string>
+                    exists: <string>
+                  serviceIsRemote: <string>
+                  security:
+                    apparmorEnabled: <string>
+                    capabilities: <string>
+                    rootless: <string>
+                    seccompEnabled: <string>
+                    seccompProfilePath: <string>
+                    selinuxEnabled: <string>
+                  slirp4netns:
+                    executable: <string>
+                    package: <string>
+                    version: <string>
+                  pasta:
+                    executable: <string>
+                    package: <string>
+                    version: <string>
+                  swapFree: <string>
+                  swapTotal: <string>
+                  uptime: <string>
+                  variant: <string>
+                  linkmode: <string>
+                store:
+                  configFile: <string>
+                  containerStore:
+                    number: <string>
+                    paused: <string>
+                    running: <string>
+                    stopped: <string>
+                  graphDriverName: <string>
+                  graphOptions:
+                    overlay.mountopt: <string>
+                  graphRoot: <string>
+                  graphRootAllocated: <string>
+                  graphRootUsed: <string>
+                  graphStatus:
+                    Backing Filesystem: <string>
+                    Native Overlay Diff: <string>
+                    Supports d_type: <string>
+                    Supports shifting: <string>
+                    Supports volatile: <string>
+                    Using metacopy: <string>
+                  imageCopyTmpDir: <string>
+                  imageStore:
+                    number: <string>
+                  runRoot: <string>
+                  volumePath: <string>
+                  transientStore: <string>
+                registries:
+                  search:
+                    - <string>
+                    - <string>
+                plugins:
+                  volume:
+                    - <string>
+                    - <string>
+                  network:
+                    - <string>
+                    - <string>
+                  log:
+                    - <string>
+                    - <string>
+                  authorization: <string>
+                version:
+                  APIVersion: <string>
+                  Version: <string>
+                  GoVersion: <string>
+                  GitCommit: <string>
+                  BuiltTime: <string>
+                  Built: <string>
+                  OsArch: <string>
+                  Os: <string>
         '400':
           description: Bad Request
           content:
@@ -414,39 +513,142 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get complete information about your podman environment.
-  /v1/common/getImageListShort:
+        - getinfo: []
+  /v1/common/getVersion:
     get:
-      summary: /v1/common/getImageListShort
+      summary: getVersion
+      operationId: ocmapi_common_getversion_yml
+      description: Get information about your current version of podman.
       tags:
         - Common
-      operationId: getImageListShort
       responses:
         '200':
           description: OK
-          headers:
-            ':status':
-              schema:
-                type: integer
-            content-length:
-              schema:
-                type: integer
-            api-version:
-              schema:
-                type: integer
-            date:
-              schema:
-                type: string
           content:
             application/json:
               schema:
+                type: object
+                properties:
+                  Client:
+                    type: object
+                    properties:
+                      APIVersion:
+                        type: string
+                      Version:
+                        type: string
+                      GoVersion:
+                        type: string
+                      GitCommit:
+                        type: string
+                      BuiltTime:
+                        type: string
+                      Built:
+                        type: string
+                      OsArch:
+                        type: string
+                      Os:
+                        type: string
+              example:
+                Client:
+                  APIVersion: <string>
+                  Version: <string>
+                  GoVersion: <string>
+                  GitCommit: <string>
+                  BuiltTime: <string>
+                  Built: <integer>
+                  OsArch: <string>
+                  Os: <string>
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getversion: []
+  /v1/common/getImageListShort:
+    get:
+      summary: getImageListShort
+      operationId: ocmapi_common_getimagelistshort_yml
+      description: Get basic information about images exising on the server.
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      properties:
+                        type: object
+                        properties:
+                          Names:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          ImageSize:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          Created:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+              example:
                 type: array
                 items:
                   type: object
@@ -472,34 +674,194 @@ paths:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get basic information about images existing on the server.
+        - getimagelistshort: []
   /v1/common/getImageListDetailed:
     get:
-      summary: /v1/common/getImageListDetailed
+      summary: getImageListDetailed
+      operationId: ocmapi_common_getimagelistdetailed_yml
+      description: Get detailed information about images exising on the server.
       tags:
         - Common
-      operationId: getImageListDetailed
       responses:
         '200':
           description: OK
-          headers:
-            ':status':
-              deprecated: false
-              schema: {}
-            content-length:
-              deprecated: false
-              schema: {}
-            api-version:
-              deprecated: false
-              schema: {}
-            date:
-              deprecated: false
-              schema: {}
           content:
             application/json:
               schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      properties:
+                        type: object
+                        properties:
+                          Id:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          ParentId:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          RepoTags:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          RepoDigests:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          Size:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          SharedSize:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          VirtualSize:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          Labels:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              properties:
+                                type: object
+                                properties:
+                                  org.opencontainers.image.authors:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.base.name:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.description:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.documentation:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                      format:
+                                        type: string
+                                  org.opencontainers.image.licenses:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.source:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                      format:
+                                        type: string
+                                  org.opencontainers.image.title:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.url:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                      format:
+                                        type: string
+                                  org.opencontainers.image.vendor:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                                  org.opencontainers.image.version:
+                                    type: object
+                                    properties:
+                                      type:
+                                        type: string
+                          Containers:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          Digest:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              format:
+                                type: string
+                          History:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          Names:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          Created:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          CreatedAt:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              format:
+                                type: string
+              example:
                 type: array
                 items:
                   type: object
@@ -509,8 +871,7 @@ paths:
                     ParentId:
                       type: string
                     RepoTags:
-                      type: boolean
-                      nullable: true
+                      type: 'null'
                     RepoDigests:
                       type: array
                       items:
@@ -524,17 +885,16 @@ paths:
                     Labels:
                       type: object
                       properties:
-                        org.opencontainers.image.created:
+                        org.opencontainers.image.authors:
                           type: string
-                          format: date-time
+                        org.opencontainers.image.base.name:
+                          type: string
                         org.opencontainers.image.description:
                           type: string
                         org.opencontainers.image.documentation:
                           type: string
                           format: uri
                         org.opencontainers.image.licenses:
-                          type: string
-                        org.opencontainers.image.revision:
                           type: string
                         org.opencontainers.image.source:
                           type: string
@@ -544,6 +904,8 @@ paths:
                         org.opencontainers.image.url:
                           type: string
                           format: uri
+                        org.opencontainers.image.vendor:
+                          type: string
                         org.opencontainers.image.version:
                           type: string
                     Containers:
@@ -577,29 +939,61 @@ paths:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get detailed information about images existing on the server.
-  /v1/common/postEnvFileCreate:
+        - getimagelistdetailed: []
+  /v1/common/postRepoAuthLogin:
     post:
-      summary: /v1/common/postEnvFileCreate
+      summary: postRepoAuthLogin
+      operationId: ocmapi_common_postrepoauthlogin_yml
+      description: >-
+        When a repository require authentication befor any image can be pulled.
+
+
+        Currently only works with repositories that implements basic
+        authentication like username & password.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "repository": "repo_address",
+          "username": "username",
+          "password": "password"
+        }
+
+         ```
       tags:
         - Common
-      operationId: postEnvFileCreate
       responses:
-        '201':
-          description: Created
+        '200':
+          description: OK
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  File:
+                  code:
                     type: string
-                  Message:
+                  message:
                     type: string
-                  Status:
-                    type: integer
+              example:
+                code: <string>
+                message: <string>
         '400':
           description: Bad Request
           content:
@@ -608,13 +1002,38 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postrepoauthlogin'
       security:
-        - BasicAuth: []
+        - postrepoauthlogin: []
+  /v1/common/postEnvFileCreate:
+    post:
+      summary: postEnvFileCreate
+      operationId: ocmapi_common_postenvfilecreate_yml
       description: >-
         Create or replace an `env` file with parameters used in containers, good
         for moving variables like `usernames`, `passwords` and so on from the
@@ -630,9 +1049,10 @@ paths:
         add an `|` after final variable.
 
 
-        For example:
+        Example:
 
-        ```
+
+        ``` json
 
         {
           "name": "filename",
@@ -640,8 +1060,7 @@ paths:
           "replace": "no"
         }
 
-        ```
-
+         ```
 
         You can overwrite an existing file by setting the `replace` tag to yes,
         otherwise it will not do anything if the file already exists. The
@@ -649,9 +1068,10 @@ paths:
         something else here it will halt and error out.
 
 
-        for example:
+        Example:
 
-        ```
+
+        ``` json
 
         {
           "name": "filename",
@@ -659,25 +1079,90 @@ paths:
           "replace": "yes"
         }
 
-        ```
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                content:
-                  type: string
-                replace:
-                  type: string
-  /v1/common/postSecretCreate:
-    post:
-      summary: /v1/common/postSecretCreate
+         ```
       tags:
         - Common
-      operationId: postSecretCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  File:
+                    type: string
+                  Message:
+                    type: string
+                  Status:
+                    type: string
+              example:
+                File: <string>
+                Message: <string>
+                Status: <integer>
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postenvfilecreate'
+      security:
+        - postenvfilecreate: []
+  /v1/common/postGetRepoImage:
+    post:
+      summary: postGetRepoImage
+      operationId: ocmapi_common_postgetrepoimage_yml
+      description: >-
+        Pull an image to the server without creating a container ath the same
+        time.
+
+
+        If the repository requires login be sure to run the `postRepoAuthLogin`
+        endpoint before calling this one.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "repository": "full_path_to_repo",
+          "image": "imagename",
+          "tag": "tag"
+        }
+
+         ```
+      tags:
+        - Common
       responses:
         '201':
           description: Created
@@ -694,6 +1179,11 @@ paths:
                     type: string
                   replace:
                     type: string
+              example:
+                name: <string>
+                data: <string>
+                labels: <string
+                replace: <string>
         '400':
           description: Bad Request
           content:
@@ -702,26 +1192,38 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-        '500':
-          description: Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postgetrepoimage'
       security:
-        - BasicAuth: []
+        - postgetrepoimage: []
+  /v1/common/postSecretCreate:
+    post:
+      summary: postSecretCreate
+      operationId: ocmapi_common_postsecretcreate_yml
       description: >-
         Create or replace a `secret` with information used in containers, good
         for moving variables like `usernames`, `passwords` and so on from the
@@ -738,9 +1240,15 @@ paths:
         correctly before it is processed.
 
 
-        For example:
+        The `labels` tag is used for adding labels for the secret, they can be
+        viewed with the `inspect` command, each label is separated with a `,`
+        and is in the form of `LabelName=LabelValue`.
 
-        ```
+
+        Example:
+
+
+        ``` json
 
         {
           "name": "secretname",
@@ -749,8 +1257,7 @@ paths:
           "replace": "no"
         }
 
-        ```
-
+         ```
 
         You can overwrite an existing `secret` by setting the `replace` tag to
         yes, otherwise it will not do anything if the `secret` already exists.
@@ -758,9 +1265,10 @@ paths:
         put something else here it will halt and error out.
 
 
-        for example:
+        Example:
 
-        ```
+
+        ``` json
 
         {
           "name": "secretname",
@@ -769,45 +1277,30 @@ paths:
           "replace": "yes"
         }
 
-        ```
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                data:
-                  type: string
-                labels:
-                  type: string
-                replace:
-                  type: string
-  /v1/common/deleteEnvFile:
-    delete:
-      summary: /v1/common/deleteEnvFile
+         ```
       tags:
         - Common
-      operationId: deleteEnvFile
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  Code:
+                  name:
                     type: string
-                  Name:
+                  data:
                     type: string
-                  State:
+                  labels:
+                    type: string
+                  replace:
                     type: string
               example:
-                Code: '200'
-                Name: <string>
-                State: Deleted
+                name: <string>
+                data: <string>
+                labels: <string
+                replace: <string>
         '400':
           description: Bad Request
           content:
@@ -816,46 +1309,75 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
               example:
-                Code: 400
+                Code: <integer>
                 Message: <string>
                 Error: <string>
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postsecretcreate'
       security:
-        - BasicAuth: []
+        - postsecretcreate: []
+  /v1/common/postRepoAuthLogout:
+    post:
+      summary: postRepoAuthLogOut
+      operationId: ocmapi_common_postrepoauthlogout_yml
       description: >-
-        Remove an `ENV` file from the server when it is not needed anymore.
+        When logout from a repository is need use this endpoint.
 
 
-        To remove a `ENV` file a security key must be provided or it will not
-        let you delete the file.
+        If the repository already logged out from, this endpoint will generate a
+        `Bad Request` with information about being already logged out.
 
 
-        The name of the file to delete is written without `.env`, this is added
-        automatically when doing the request.
-
-
-        For example:
+        Example:
 
 
         ``` json
 
         {
-          "name": "name",
-          "key": "secretkey"
+          "repository": "repo_address"
         }
 
          ```
-  /v1/common/deleteSecFile:
-    delete:
-      summary: /v1/common/deleteSecFile
       tags:
         - Common
-      operationId: deleteSecFile
       responses:
         '200':
           description: OK
@@ -864,12 +1386,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  Code:
+                  code:
                     type: string
-                  Name:
+                  message:
                     type: string
-                  State:
-                    type: string
+              example:
+                code: <string>
+                message: <string>
         '400':
           description: Bad Request
           content:
@@ -878,71 +1401,38 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postrepoauthlogout'
       security:
-        - BasicAuth: []
-      description: >-
-        Remove an `secrets` file from the server when it for some reason is not automatically removed when creating it via the `API`.
-
-
-        To remove a `secrets` file a security key must be provided or it will
-        not let you delete the file.
-
-
-        The name of the file to delete is written without `.tmp`, this is added
-        automatically when doing the request.
-
-
-        For example:
-
-
-        ``` json
-
-        {
-          "name": "name",
-          "key": "secretkey"
-        }
-
-         ```
+        - postrepoauthlogout: []
   /v1/common/deleteImages:
     delete:
-      summary: /v1/common/deleteImages
-      operationId: deleteImages
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: string
-                  Name:
-                    type: string
-                  State:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-      tags:
-        - Common
-      security:
-        - BasicAuth: []
+      summary: deleteImages
+      operationId: ocmapi_common_deleteimages_yml
       description: >-
         Prunes all unused `images` from the server when when they are no longer
         needed.
@@ -958,32 +1448,26 @@ paths:
         }
 
          ```
-  /v1/containers/getStatus:
-    get:
-      summary: /v1/containers/getStatus
       tags:
-        - Containers
-      operationId: getAllContainerStatus
+        - Common
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: string
-                    State:
-                      type: string
-                    Status:
-                      type: string
-                    Exited:
-                      type: string
-                    ExitCode:
-                      type: string
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
         '400':
           description: Bad Request
           content:
@@ -992,22 +1476,210 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deleteimages'
       security:
-        - BasicAuth: []
+        - deleteimages: []
+  /v1/common/deleteSecFile:
+    delete:
+      summary: deleteSecFile
+      operationId: ocmapi_common_deletesecfile_yml
+      description: >-
+        Remove an `secrets` file from the server when it for some reason is not
+        automatically removed when creating it via the `API`.
+
+
+        To remove a `secrets` file a security key must be provided or it will
+        not let you delete the file.
+
+
+        The name of the file to delete is written without `.tmp`, this is added
+        automatically when doing the request.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deletesecfile'
+      security:
+        - deletesecfile: []
+  /v1/common/deleteEnvFile:
+    delete:
+      summary: deleteEnvFile
+      operationId: ocmapi_common_deleteenvfile_yml
+      description: >-
+        Remove an `ENV` file from the server when it is not needed anymore.
+
+
+        To remove a `ENV` file a security key must be provided or it will not
+        let you delete the file.
+
+
+        The name of the file to delete is written without `.env`, this is added
+        automatically when doing the request.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "key": "secretkey"
+        }
+
+         ```
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deleteenvfile'
+      security:
+        - deleteenvfile: []
+  /v1/containers/getState:
+    get:
+      summary: getState
+      operationId: ocmapi_containers_getstate_yml
       description: >-
         Get container status for all containers, whether they are running,
         exited and so on.
-  /v1/containers/getStatus/created:
-    get:
-      summary: /v1/containers/getStatus/created
       tags:
         - Containers
-      operationId: getContainersCreatedStatus
       responses:
         '200':
           description: OK
@@ -1025,9 +1697,20 @@ paths:
                     Status:
                       type: string
                     Exited:
-                      type: boolean
+                      type: string
                     ExitCode:
-                      type: integer
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <string>
+                  ExitCode: <string>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <string>
+                  ExitCode: <string>
         '400':
           description: Bad Request
           content:
@@ -1036,46 +1719,32 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  Status:
-                    type: string
-        '500':
-          description: Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all containers with status `created` if exists.
-  /v1/containers/getStatus/running:
+        - getstate: []
+  /v1/containers/getState/created:
     get:
-      summary: /v1/containers/getStatus/running
+      summary: getState/created
+      operationId: ocmapi_containers_getstate-created_yml
+      description: Get all containers with state `created` if exists.
       tags:
         - Containers
-      operationId: getContainersRunningStatus
       responses:
         '200':
           description: OK
@@ -1093,9 +1762,20 @@ paths:
                     Status:
                       type: string
                     Exited:
-                      type: boolean
+                      type: string
                     ExitCode:
-                      type: integer
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
         '400':
           description: Bad Request
           content:
@@ -1104,11 +1784,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1117,33 +1801,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all containers with status `running` if exists.
-  /v1/containers/getStatus/paused:
+        - getstate_created: []
+  /v1/containers/getState/exited:
     get:
-      summary: /v1/containers/getStatus/paused
+      summary: getState/exited
+      operationId: ocmapi_containers_getstate-exited_yml
+      description: Get all containers with state `exited` if exists.
       tags:
         - Containers
-      operationId: getContainersPausedStatus
       responses:
         '200':
           description: OK
@@ -1161,9 +1861,20 @@ paths:
                     Status:
                       type: string
                     Exited:
-                      type: boolean
+                      type: string
                     ExitCode:
-                      type: integer
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
         '400':
           description: Bad Request
           content:
@@ -1172,11 +1883,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1185,33 +1900,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all containers with status `paused` if exists.
-  /v1/containers/getStatus/exited:
+        - getstate_exited: []
+  /v1/containers/getState/paused:
     get:
-      summary: /v1/containers/getStatus/exited
+      summary: getState/paused
+      operationId: ocmapi_containers_getstate-paused_yml
+      description: Get all containers with state `paused` if exists.
       tags:
         - Containers
-      operationId: getContainersExitedStatus
       responses:
         '200':
           description: OK
@@ -1229,9 +1960,20 @@ paths:
                     Status:
                       type: string
                     Exited:
-                      type: boolean
+                      type: string
                     ExitCode:
-                      type: integer
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
         '400':
           description: Bad Request
           content:
@@ -1240,11 +1982,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1253,33 +1999,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all containers with status `exited` if exists.
-  /v1/containers/getStatus/unknown:
+        - getstate_paused: []
+  /v1/containers/getState/running:
     get:
-      summary: /v1/containers/getStatus/unknown
+      summary: getState/running
+      operationId: ocmapi_containers_getstate-running_yml
+      description: Get all containers with state `running` if exists.
       tags:
         - Containers
-      operationId: getContainersUnknownStatus
       responses:
         '200':
           description: OK
@@ -1297,9 +2059,20 @@ paths:
                     Status:
                       type: string
                     Exited:
-                      type: boolean
+                      type: string
                     ExitCode:
-                      type: integer
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
         '400':
           description: Bad Request
           content:
@@ -1308,11 +2081,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1321,33 +2098,167 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all containers with status `unknown` if exists.
+        - getstate_running: []
+  /v1/containers/getState/unknown:
+    get:
+      summary: getState/unknown
+      operationId: ocmapi_containers_getstate-unknown_yml
+      description: Get all containers with state `unknown` if exists.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: string
+                    State:
+                      type: string
+                    Status:
+                      type: string
+                    Exited:
+                      type: string
+                    ExitCode:
+                      type: string
+              example:
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+                - Names: <string>
+                  State: <string>
+                  Status: <string>
+                  Exited: <boolean>
+                  ExitCode: <integer>
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Info:
+                    type: string
+                  Status:
+                    type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_unknown: []
   /v1/containers/postContainerCreate:
     post:
-      summary: /v1/containers/postContainerCreate
+      summary: postContainerCreate
+      operationId: ocmapi_containers_postcontainercreate_yml
+      description: >-
+        Endpoint for creating a container.
+
+
+        All options needs to be separated with a comma (`,`) and start with `--`
+        or they will be invalid.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "MyContainer",
+          "image": "/full/path/to/repo/image:tag",
+          "options": "--option1,--option2=value2"
+        }
+
+         ```
       tags:
         - Containers
-      operationId: postContainerCreate
       responses:
         '201':
           description: Created
@@ -1357,11 +2268,15 @@ paths:
                 type: object
                 properties:
                   Status:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   ID:
                     type: string
+              example:
+                Status: <integer>
+                Message: <string>
+                ID: <string>
         '400':
           description: Bad Request
           content:
@@ -1370,63 +2285,62 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      security:
-        - BasicAuth: []
-      description: >-
-        API for creating a container.
-
-
-        All options needs to be separated with a comma (`,`) and start with `--`
-        or they will be invalid.
-
-
-        For example like this:
-
-        ```json
-
-        {
-          "name": "MyContainer",
-          "image": "/full/path/to/repo/image:tag",
-          "options": "--option1,--option2=value2"
-        }
-
-        ```
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                image:
-                  type: string
-                options:
-                  type: string
-  /v1/containers/postSetState:
+        $ref: '#/components/requestBodies/postcontainercreate'
+      security:
+        - postcontainercreate: []
+  /v1/containers/postGetStateSingle:
     post:
-      summary: /v1/containers/postSetState
+      summary: postGetStateSingle
+      operationId: ocmapi_containers_postgetstatesingle_yml
+      description: >-
+        With this endpoint you can start, stop, pause and so on for a single
+        container.  
+
+        Valid states to use are: `start`, `stop`, `pause`, `unpause` & `restart`
       tags:
         - Containers
-      operationId: postContainerStateChange
       responses:
         '200':
           description: OK
@@ -1439,6 +2353,9 @@ paths:
                     type: string
                   State:
                     type: string
+              example:
+                Name: <string>
+                State: <string>
         '400':
           description: Bad Request
           content:
@@ -1447,11 +2364,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1460,46 +2381,62 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   State:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                State: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      security:
-        - BasicAuth: []
-      description: >-
-        With this API you can start, stop, pause and so on for a single
-        container.
-
-        Valid states to user are: `start`, `stop`, `pause`, `unpause` &
-        `restart`
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                state:
-                  type: string
-  /v1/containers/deleteContainer:
-    delete:
-      summary: /v1/containers/deleteContainer
-      operationId: deleteContainer
+        $ref: '#/components/requestBodies/postgetstatesingle'
+      security:
+        - postgetstatesingle: []
+  /v1/containers/postSetState:
+    post:
+      summary: postSetState
+      operationId: ocmapi_containers_postsetstate_yml
+      description: >-
+        With this endpoint you can start, stop, pause and so on for a single
+        container.  
+
+        Valid states to use are: `start`, `stop`, `pause`, `unpause` & `restart`
+      tags:
+        - Containers
       responses:
         '200':
           description: OK
@@ -1508,12 +2445,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  Code:
-                    type: string
                   Name:
                     type: string
                   State:
                     type: string
+              example:
+                Name: <string>
+                State: <string>
         '400':
           description: Bad Request
           content:
@@ -1522,15 +2460,72 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      tags:
-        - Containers
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Info:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                State: <string>
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postsetstate'
       security:
-        - BasicAuth: []
+        - postsetstate: []
+  /v1/containers/deleteContainer:
+    delete:
+      summary: deleteContainer
+      operationId: ocmapi_containers_deletecontainer_yml
       description: >-
         Deletes a container when it is no longer needed.
 
@@ -1554,20 +2549,8 @@ paths:
         }
 
          ```
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                key:
-                  type: string
-  /v1/containers/deleteVolume:
-    delete:
-      summary: /v1/containers/deleteVolume
-      operationId: deleteVolume
+      tags:
+        - Containers
       responses:
         '200':
           description: OK
@@ -1582,6 +2565,10 @@ paths:
                     type: string
                   State:
                     type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
         '400':
           description: Bad Request
           content:
@@ -1590,15 +2577,38 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      tags:
-        - Containers
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deletecontainer'
       security:
-        - BasicAuth: []
+        - deletecontainer: []
+  /v1/containers/deleteVolume:
+    delete:
+      summary: deleteVolume
+      operationId: ocmapi_containers_deletevolume_yml
       description: >-
         Removes a named volume.
 
@@ -1608,7 +2618,7 @@ paths:
 
 
         Container that the volume is connected to must be removed first via
-        antoher API call.
+        antoher endpoint call.
 
 
         Example:
@@ -1622,22 +2632,69 @@ paths:
         }
 
          ```
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                key:
-                  type: string
-  /v1/pods/getStatus:
+        $ref: '#/components/requestBodies/deletevolume'
+      security:
+        - deletevolume: []
+  /v1/pods/getState:
     get:
-      summary: /v1/pods/getStatus
+      summary: getState
+      operationId: ocmapi_pods_getstate_yml
+      description: Get state for all pods exisintg on the server.
       tags:
         - Pods
-      operationId: getAllPodsStatus
       responses:
         '200':
           description: OK
@@ -1652,6 +2709,10 @@ paths:
                     type: string
                   Created:
                     type: string
+              example:
+                Name: <string>
+                ID: <string>
+                Created: <string>
         '400':
           description: Bad Request
           content:
@@ -1660,20 +2721,32 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get status for all Pods.
-  /v1/pods/getStatus/created:
+        - getstate: []
+  /v1/pods/getState/created:
     get:
-      summary: /v1/pods/getStatus/created
+      summary: getState/created
+      operationId: ocmapi_pods_getstate-created_yml
+      description: Get all pods with state `created` if exists.
       tags:
         - Pods
-      operationId: getPodsCreatedStatus
       responses:
         '200':
           description: OK
@@ -1690,6 +2763,13 @@ paths:
                       type: string
                     Status:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
         '400':
           description: Bad Request
           content:
@@ -1698,11 +2778,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1711,33 +2795,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all pods with status `created` if exists.
-  /v1/pods/getStatus/running:
+        - getstate_created: []
+  /v1/pods/getState/exited:
     get:
-      summary: /v1/pods/getStatus/running
+      summary: getState/exited
+      operationId: ocmapi_pods_getstate-exited_yml
+      description: Get all pods with state `exited` if exists.
       tags:
         - Pods
-      operationId: getPodsRunningStatus
       responses:
         '200':
           description: OK
@@ -1754,6 +2854,13 @@ paths:
                       type: string
                     Status:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
         '400':
           description: Bad Request
           content:
@@ -1762,11 +2869,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1775,33 +2886,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all pods with status `running` if exists.
-  /v1/pods/getStatus/paused:
+        - getstate_exited: []
+  /v1/pods/getState/paused:
     get:
-      summary: /v1/pods/getStatus/paused
+      summary: getState/paused
+      operationId: ocmapi_pods_getstate-paused_yml
+      description: Get all pods with state `paused` if exists.
       tags:
         - Pods
-      operationId: getPodsPausedStatus
       responses:
         '200':
           description: OK
@@ -1818,6 +2945,13 @@ paths:
                       type: string
                     Status:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
         '400':
           description: Bad Request
           content:
@@ -1826,11 +2960,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1839,33 +2977,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all pods with status `paused` if exists.
-  /v1/pods/getStatus/exited:
+        - getstate_paused: []
+  /v1/pods/getState/running:
     get:
-      summary: /v1/pods/getStatus/exited
+      summary: getState/running
+      operationId: ocmapi_pods_getstate-running_yml
+      description: Get all pods with state `running` if exists.
       tags:
         - Pods
-      operationId: getPodsExitedStatus
       responses:
         '200':
           description: OK
@@ -1882,6 +3036,13 @@ paths:
                       type: string
                     Status:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
         '400':
           description: Bad Request
           content:
@@ -1890,11 +3051,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1903,33 +3068,49 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all pods with status `exited` if exists.
-  /v1/pods/getStatus/unknown:
+        - getstate_running: []
+  /v1/pods/getState/unknown:
     get:
-      summary: /v1/pods/getStatus/unknown
+      summary: getState/unknown
+      operationId: ocmapi_pods_getstate-unknown_yml
+      description: Get all pods with state `unknown` if exists.
       tags:
         - Pods
-      operationId: getPodsUnknownStatus
       responses:
         '200':
           description: OK
@@ -1946,6 +3127,13 @@ paths:
                       type: string
                     Status:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
+                - Name: <string>
+                  ID: <string>
+                  Status: <string>
         '400':
           description: Bad Request
           content:
@@ -1954,11 +3142,15 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '404':
           description: Not Found
           content:
@@ -1967,33 +3159,67 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Info:
                     type: string
                   Status:
                     type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                Status: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get all pods with status `unknown` if exists.
+        - getstate_unknown: []
   /v1/pods/postPodCreate:
     post:
-      summary: /v1/pods/postPodCreate
+      summary: postPodCreate
+      operationId: ocmapi_pods_postpodcreate_yml
+      description: >-
+        Endpoint for creating a pod with a set of options.
+
+
+        All options needs to be comma (`,`) separated and start with `--` or
+        they will be invalid.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "options": "--option1,--option2='value'"
+        }
+
+         ```
       tags:
         - Pods
-      operationId: postPodCreate
       responses:
         '201':
           description: Created
@@ -2003,11 +3229,15 @@ paths:
                 type: object
                 properties:
                   Status:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   ID:
                     type: string
+              example:
+                Status: <integer>
+                Message: <string>
+                ID: <string>
         '400':
           description: Bad Request
           content:
@@ -2016,103 +3246,58 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      security:
-        - BasicAuth: []
-      description: >-
-        API for creating a pod.
-
-
-        All options needs to be comma (`,`) separated and start with `--` or
-        they will be invalid.
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                options:
-                  type: string
+        $ref: '#/components/requestBodies/postpodcreate'
+      security:
+        - postpodcreate: []
   /v1/pods/postSetState:
     post:
-      summary: /v1/pods/postSetState
-      tags:
-        - Pods
-      operationId: postPodStateChange
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Name:
-                    type: string
-                  State:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Info:
-                    type: string
-                  State:
-                    type: string
-        '500':
-          description: Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-      security:
-        - BasicAuth: []
+      summary: postSetState
+      operationId: ocmapi_pods_postsetstate_yml
       description: >-
-        With this API you can start, stop, pause and so on for a single pod.
+        With this endpoint you can start, stop, pause and so on for a single
+        pod.  
 
         Valid states to user are: `start`, `stop`, `pause`, `unpause` &
         `restart`
@@ -2122,20 +3307,21 @@ paths:
         command to, so if only one container in the pod needs to be for example
         restarted and it do not have dependencies from other containers,
         sometimes it is better to just restart that single container.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                state:
-                  type: string
-  /v1/pods/deletePod:
-    delete:
-      summary: /v1/pods/deletePod
-      operationId: deletePod
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "state": "state"
+        }
+
+         ```
+      tags:
+        - Pods
       responses:
         '200':
           description: OK
@@ -2144,12 +3330,13 @@ paths:
               schema:
                 type: object
                 properties:
-                  Code:
-                    type: string
                   Name:
                     type: string
                   State:
                     type: string
+              example:
+                Name: <string>
+                State: <string>
         '400':
           description: Bad Request
           content:
@@ -2158,21 +3345,75 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      tags:
-        - Pods
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Info:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Info: <string>
+                State: <string>
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postsetstate'
       security:
-        - BasicAuth: []
+        - postsetstate: []
+  /v1/pods/deletePod:
+    delete:
+      summary: deletePod
+      operationId: ocmapi_pods_deletepod_yml
       description: >-
-        Removes a network.
-
-
-        This API gives you the option to delete an unused network, if the
-        network is connected to a container it can not be removed, this to have
+        This endpoint gives you the option to delete a unused pod, if the pod
+        has containers connected to it, removal is not possible, this to have
         some safeguard against accidental removals.
 
 
@@ -2187,12 +3428,69 @@ paths:
         }
 
          ```
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deletepod'
+      security:
+        - deletepod: []
   /v1/networks/getInfo:
     get:
-      summary: /v1/networks/getInfo
+      summary: getInfo
+      operationId: ocmapi_networks_getinfo_yml
+      description: Get information on all existing networks.
       tags:
         - Networks
-      operationId: getAllNetworksInfo
       responses:
         '200':
           description: OK
@@ -2211,6 +3509,15 @@ paths:
                       type: string
                     Created:
                       type: string
+              example:
+                - Name: <string>
+                  ID: <string>
+                  Driver: <string>
+                  Created: <string>
+                - Name: <string>
+                  ID: <string>
+                  Driver: <string>
+                  Created: <string>
         '400':
           description: Bad Request
           content:
@@ -2219,20 +3526,37 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: Get information on all existing podman networks.
+        - getinfo: []
   /v1/networks/getInfo/<id>:
     get:
-      summary: /v1/networks/getInfo/<id>
+      summary: getInfo/<id>
+      operationId: ocmapi_networks_getinfo--id-_yml
+      description: >-
+        Get information on a specific network.
+
+
+        Replace with either network name or ID for the network you want
+        information about.
       tags:
         - Networks
-      operationId: getSingleNetworkInfo
       responses:
         '200':
           description: OK
@@ -2279,7 +3603,45 @@ paths:
                           type: string
                     containers:
                       type: object
-                      properties: {}
+              example:
+                - name: <string>
+                  id: <string>
+                  driver: <string>
+                  network_interface: <string>
+                  created: <string>
+                  subnets:
+                    - subnet: <string>
+                      gateway: <string>
+                    - subnet: <string>
+                      gateway: <string>
+                  ipv6_enabled: <string>
+                  internal: <string>
+                  dns_enabled: <string>
+                  network_dns_servers:
+                    - <string>
+                    - <string>
+                  ipam_options:
+                    driver: <string>
+                  containers: {}
+                - name: <string>
+                  id: <string>
+                  driver: <string>
+                  network_interface: <string>
+                  created: <string>
+                  subnets:
+                    - subnet: <string>
+                      gateway: <string>
+                    - subnet: <string>
+                      gateway: <string>
+                  ipv6_enabled: <string>
+                  internal: <string>
+                  dns_enabled: <string>
+                  network_dns_servers:
+                    - <string>
+                    - <string>
+                  ipam_options:
+                    driver: <string>
+                  containers: {}
         '400':
           description: Bad Request
           content:
@@ -2288,38 +3650,67 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       security:
-        - BasicAuth: []
-      description: >-
-        Get information on a specific podman network.
-
-
-        Replace `<id>` with either network name or ID for the network you want
-        information about.
+        - getinfo_id: []
   /v1/networks/postNetworkCreate:
     post:
-      summary: /v1/networks/postNetworkCreate
+      summary: postNetworkCreate
+      operationId: ocmapi_networks_postnetworkcreate_yml
+      description: >-
+        Endpoint for creating a network.
+
+
+        All options needs to be comma (`,`) seperated and start with `--` or
+        they will be invalid.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "name",
+          "options": "--option1,--option2='value'"
+        }
+
+         ```
       tags:
         - Networks
-      operationId: postNetworkCreate
       responses:
         '201':
           description: Created
@@ -2329,11 +3720,15 @@ paths:
                 type: object
                 properties:
                   Status:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   ID:
                     type: string
+              example:
+                Status: <integer>
+                Message: <string>
+                ID: <string>
         '400':
           description: Bad Request
           content:
@@ -2342,82 +3737,57 @@ paths:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
         '500':
-          description: Error
+          description: Internal Server Error
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   Code:
-                    type: integer
+                    type: string
                   Message:
                     type: string
                   Error:
                     type: string
-      security:
-        - BasicAuth: []
-      description: >-
-        API for creating a podman networks.
-
-
-        All options needs to be comma (`,`) seperated and start with `--` or
-        they will be invalid.
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
       requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                options:
-                  type: string
+        $ref: '#/components/requestBodies/postnetworkcreate'
+      security:
+        - postnetworkcreate: []
   /v1/networks/deleteNetwork:
     delete:
-      summary: /v1/networks/deleteNetwork
-      operationId: deleteNetwork
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: string
-                  Name:
-                    type: string
-                  State:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: integer
-                  Message:
-                    type: string
-                  Error:
-                    type: string
-      tags:
-        - Networks
-      security:
-        - BasicAuth: []
+      summary: deleteNetwork
+      operationId: ocmapi_networks_deletenetwork_yml
       description: >-
-        Removes a network.
-
-
-        This API gives you the option to delete an unused network, if the
+        This endpoint gives you the option to delete an unused network, if the
         network is connected to a container it can not be removed, this to have
         some safeguard against accidental removals.
 
@@ -2433,17 +3803,454 @@ paths:
         }
 
          ```
+      tags:
+        - Networks
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Name:
+                    type: string
+                  State:
+                    type: string
+              example:
+                Code: <integer>
+                Name: <string>
+                State: Deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: string
+                  Message:
+                    type: string
+                  Error:
+                    type: string
+              example:
+                Code: <integer>
+                Message: <string>
+                Error: <string>
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/deletenetwork'
+      security:
+        - deletenetwork: []
+servers:
+  - url: "/"
+    description: Base Server
 components:
+  schemas:
+    deletecontainer:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    deletevolume:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    postcontainercreate:
+      type: object
+      properties:
+        name:
+          type: string
+        image:
+          type: string
+        options:
+          type: string
+      example:
+        name: <string>
+        image: <string>
+        options: <string>
+    postgetstatesingle:
+      type: object
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+      example:
+        name: <string>
+        state: <string>
+    postsetstate:
+      type: object
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+      example:
+        name: <string>
+        state: <string>
+    deletenetwork:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    postnetworkcreate:
+      type: object
+      properties:
+        name:
+          type: string
+        options:
+          type: string
+      example:
+        name: <string>
+        options: <string>
+    deletepod:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    postpodcreate:
+      type: object
+      properties:
+        name:
+          type: string
+        options:
+          type: string
+      example:
+        name: <string>
+        options: <string>
+    postenvfilecreate:
+      type: object
+      properties:
+        name:
+          type: string
+        content:
+          type: string
+        replace:
+          type: string
+      example:
+        name: <string>
+        content: <string>
+        replace: <string>
+    postgetrepoimage:
+      type: object
+      properties:
+        repository:
+          type: string
+        image:
+          type: string
+        version:
+          type: string
+      example:
+        repository: <string>
+        image: <string>
+        version: <string>
+    postsecretcreate:
+      type: object
+      properties:
+        name:
+          type: string
+        data:
+          type: string
+        labels:
+          type: string
+        replace:
+          type: string
+      example:
+        name: <string>
+        data: <string>
+        labels: <label1>=<string>,<label2>=<string>
+        replace: 'no'
+    deleteimages:
+      type: object
+      properties:
+        key:
+          type: string
+      example:
+        key: <key>
+    postrepoauthlogin:
+      type: object
+      properties:
+        repository:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+      example:
+        repository: <string>
+        username: <string>
+        password: <string>
+    deletesecfile:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    deleteenvfile:
+      type: object
+      properties:
+        name:
+          type: string
+        key:
+          type: string
+      example:
+        name: <string>
+        key: <string>
+    postrepoauthlogout:
+      type: object
+      properties:
+        repository:
+          type: string
+      example:
+        repository: <string>
+  requestBodies:
+    deletecontainer:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deletecontainer'
+      description: ''
+      required: true
+    deletevolume:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deletevolume'
+      description: ''
+      required: true
+    postcontainercreate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postcontainercreate'
+      description: ''
+      required: true
+    postgetstatesingle:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postgetstatesingle'
+      description: ''
+      required: true
+    postsetstate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postsetstate'
+      description: ''
+      required: true
+    deletenetwork:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deletenetwork'
+      description: ''
+      required: true
+    postnetworkcreate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postnetworkcreate'
+      description: ''
+      required: true
+    deletepod:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deletepod'
+      description: ''
+      required: true
+    postpodcreate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postpodcreate'
+      description: ''
+      required: true
+    postenvfilecreate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postenvfilecreate'
+      description: ''
+      required: true
+    postgetrepoimage:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postgetrepoimage'
+      description: ''
+      required: true
+    postsecretcreate:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postsecretcreate'
+      description: ''
+      required: true
+    deleteimages:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deleteimages'
+      description: ''
+      required: true
+    postrepoauthlogin:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postrepoauthlogin'
+      description: ''
+      required: true
+    deletesecfile:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deletesecfile'
+      description: ''
+      required: true
+    deleteenvfile:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/deleteenvfile'
+      description: ''
+      required: true
+    postrepoauthlogout:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postrepoauthlogout'
+      description: ''
+      required: true
   securitySchemes:
-    BasicAuth:
+    deletecontainer:
       type: http
       scheme: basic
-tags:
-  - name: Common
-    description: All interfaces related to systemwide information and configuration for podman resides under here.
-  - name: Containers
-    description: All interfaces related to container management resides under here.
-  - name: Pods
-    description: All interfaces related to pod management resides under here.
-  - name: Networks
-    description: All interfaces related to network management resides under here.
+    deletevolume:
+      type: http
+      scheme: basic
+    getstate_created:
+      type: http
+      scheme: basic
+    getstate_exited:
+      type: http
+      scheme: basic
+    getstate_paused:
+      type: http
+      scheme: basic
+    getstate_running:
+      type: http
+      scheme: basic
+    getstate_unknown:
+      type: http
+      scheme: basic
+    getstate:
+      type: http
+      scheme: basic
+    postcontainercreate:
+      type: http
+      scheme: basic
+    postgetstatesingle:
+      type: http
+      scheme: basic
+    postsetstate:
+      type: http
+      scheme: basic
+    deletenetwork:
+      type: http
+      scheme: basic
+    getinfo_id:
+      type: http
+      scheme: basic
+    getinfo:
+      type: http
+      scheme: basic
+    postnetworkcreate:
+      type: http
+      scheme: basic
+    deletepod:
+      type: http
+      scheme: basic
+    postpodcreate:
+      type: http
+      scheme: basic
+    getstats:
+      type: http
+      scheme: basic
+    getimagelistshort:
+      type: http
+      scheme: basic
+    getimagelistdetailed:
+      type: http
+      scheme: basic
+    postenvfilecreate:
+      type: http
+      scheme: basic
+    postgetrepoimage:
+      type: http
+      scheme: basic
+    getversion:
+      type: http
+      scheme: basic
+    postsecretcreate:
+      type: http
+      scheme: basic
+    deleteimages:
+      type: http
+      scheme: basic
+    postrepoauthlogin:
+      type: http
+      scheme: basic
+    deletesecfile:
+      type: http
+      scheme: basic
+    deleteenvfile:
+      type: http
+      scheme: basic
+    postrepoauthlogout:
+      type: http
+      scheme: basic

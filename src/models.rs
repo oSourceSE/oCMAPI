@@ -94,8 +94,31 @@ pub struct DeleteVolume {
     pub key: String,
 }
 
+// Model for deleting pod.
 #[derive(Serialize,Deserialize)]
 pub struct DeletePod {
     pub name: String,
     pub key: String,
+}
+
+// Model for pulling an image.
+#[derive(Serialize,Deserialize)]
+pub struct GetImage {
+    pub repository: String,
+    pub image: String,
+    pub version: String,
+}
+
+// Model for logging into a repository.
+#[derive(Serialize,Deserialize)]
+pub struct RepoLogin {
+    pub repository: String,
+    pub username: String,
+    pub password: String,
+}
+
+// Model for logging out of a repository.
+#[derive(Serialize,Deserialize)]
+pub struct RepoLogOut {
+    pub repository: String,
 }
