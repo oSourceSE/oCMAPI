@@ -122,3 +122,9 @@ pub struct RepoLogin {
 pub struct RepoLogOut {
     pub repository: String,
 }
+
+// Model for getting detailed image information.
+#[derive(Serialize,Deserialize)]
+pub struct GetImageInfo {
+    pub name: String,
+}

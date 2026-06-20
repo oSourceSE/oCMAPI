@@ -170,8 +170,8 @@ pub async fn get_common_stats(reqdata: HttpRequest) -> io::Result<HttpResponse> 
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -258,8 +258,8 @@ pub async fn get_common_version(reqdata: HttpRequest) -> io::Result<HttpResponse
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err)
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -346,8 +346,8 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -385,7 +385,7 @@ pub async fn get_common_info(reqdata: HttpRequest) -> io::Result<HttpResponse> {
 }
 
 // Get minimal image list.
-pub async fn get_common_short_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn get_common_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // The command.
     let cmd = Command::new("podman")
         .arg("image")
@@ -441,8 +441,224 @@ pub async fn get_common_short_image_list(reqdata: HttpRequest) -> io::Result<Htt
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Internal Server Error",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
+// Get .env files.
+pub async fn get_common_env_files(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Command
+    let cmd = Command::new("ls")
+        .arg("-1")
+        .arg(format!("{}/",ENV_PATH.get().unwrap()))
+        .output();
+
+    // Check if command executed OK.
+    match cmd {
+        Ok(cmd_ok) => {
+            // Create empty JSON object.
+            let mut data = json!({});
+            // Check length of response.
+            let file_count = cmd_ok.stdout.len();
+            if file_count == 0 {
+                // Construct JSON object.
+                data = json!(
+                    {
+                        "Code": 200,
+                        "Info": "No .env files found",
+                        "State": 0,
+                        "Status": "OK"
+                    }
+                );
+            }
+            else if file_count > 4 {
+                // Construct JSON object.
+                data = json!(
+                    {
+                        "Code": 200,
+                        "Info": "Found .env files",
+                        "Files": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).replace("\n", ",")),
+                        "State": 1,
+                        "Status": "OK"
+                    }
+                );
+            }
+             // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+        }
+        Err(cmd_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Internal Server Error",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
+// Get secret files.
+pub async fn get_common_secret_files(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Command
+    let cmd = Command::new("ls")
+        .arg("-1")
+        .arg(format!("{}/",SEC_PATH.get().unwrap()))
+        .output();
+
+    // Check if command executed OK.
+    match cmd {
+        Ok(cmd_ok) => {
+            // Create empty JSON object.
+            let mut data = json!({});
+            // Check length of response.
+            let file_count = cmd_ok.stdout.len();
+            if file_count == 0 {
+                // Construct JSON object.
+                data = json!(
+                    {
+                        "Code": 200,
+                        "Info": "No secrets files found",
+                        "State": 0,
+                        "Status": "OK"
+                    }
+                );
+            }
+            else if file_count > 4 {
+                // Construct JSON object.
+                data = json!(
+                    {
+                        "Code": 200,
+                        "Info": "Found secret files",
+                        "Files": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).replace("\n", ",")),
+                        "State": 1,
+                        "Status": "OK"
+                    }
+                );
+            }
+             // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::Ok()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+        }
+        Err(cmd_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -480,11 +696,60 @@ pub async fn get_common_short_image_list(reqdata: HttpRequest) -> io::Result<Htt
 }
 
 // Get detailed image list.
-pub async fn get_common_detailed_image_list(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn post_common_image_list_single(sdata: web::Json<GetImageInfo>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters.
+    let rx_repository = Regex::new(r"([^A-Za-z0-9./:_-])").unwrap();
+
+    // Check if regex matches anything in name.
+    if jdata.name.is_empty() || rx_repository.find(&&jdata.name.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
     // The command.
     let cmd = Command::new("podman")
         .arg("image")
-        .arg("ls")
+        .arg("inspect")
+        .arg(jdata.name)
         .arg("--format=json")
         .output();
     // Check if command went ok or not.
@@ -530,8 +795,8 @@ pub async fn get_common_detailed_image_list(reqdata: HttpRequest) -> io::Result<
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -582,8 +847,8 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -630,8 +895,8 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: replace tag must contain only yes or no",
-                "Error": "Invalid Information"
+                "Info": "Replace tag must contain only yes or no",
+                "Status": "Bad Request"
             }
         );
 
@@ -679,9 +944,10 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
         // Build answer.
         let data = json!(
             {
-                "Status": "201",
-                "Message": "Successfully created env file",
-                "File": format!("{}", full_path)
+                "Code": "201",
+                "Info": "Successfully created env file",
+                "File": format!("{}", full_path),
+                "Status": "Created"
             }
         );
 
@@ -719,8 +985,8 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Could not process data",
-                "Error": "file already exist, set replace to yes or change the name"
+                "Info": "File already exist, set replace to yes or change the name",
+                "Status": "Bad Request"
             }
         );
         // Get USER-AGENT from request header, ugly but works.
@@ -773,8 +1039,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -815,8 +1081,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Labels provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Labels provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -857,8 +1123,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Path do not exist, check configuration.",
-                "Error": "Invalid Path"
+                "Info": "Path do not exist, check configuration",
+                "Status": "Bad Request"
             }
         );
 
@@ -961,9 +1227,10 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                             // Create response.
                             let data = json!(
                                 {
-                                    "Status": "201",
-                                    "Message": "Successfully created secret",
-                                    "ID": format!("{}", String::from_utf8_lossy(&cmd_create_ok.stdout).trim_end())
+                                    "Code": "201",
+                                    "Info": "Successfully created secret",
+                                    "ID": format!("{}", String::from_utf8_lossy(&cmd_create_ok.stdout).trim_end()),
+                                    "Status": "Created"
                                 }
                             );
                             // Get USER-AGENT from request header, ugly but works.
@@ -1000,8 +1267,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                             let data = json!(
                                 {
                                     "Code": 400,
-                                    "Message": "Bad Request: Could not create secret",
-                                    "Error": format!("{}", format!("{}",&cmd_create_ok.status).trim_end().replace("\n", ", "))
+                                    "Info": format!("{}", format!("{}",&cmd_create_ok.status).trim_end().replace("\n", ", ")),
+                                    "Status": "Bad Request"
                                 }
                             );
                         
@@ -1046,8 +1313,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                     let data = json!(
                         {
                             "Code": 400,
-                            "Message": "Bad Request: Could not create secret",
-                            "Error": format!("{}", format!("{}",&cmd_create_err).trim_end().replace("\n", ", "))
+                            "Info": format!("{}", format!("{}",&cmd_create_err).trim_end().replace("\n", ", ")),
+                            "Status": "Bad Request"
                         }
                     );
 
@@ -1113,9 +1380,10 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                                 // Create response.
                                 let data = json!(
                                     {
-                                        "Status": "201",
-                                        "Message": "Successfully created secret",
-                                        "ID": format!("{}", String::from_utf8_lossy(&cmd_create_ok.stdout).trim_end())
+                                        "Code": "201",
+                                        "Info": "Successfully created secret",
+                                        "ID": format!("{}", String::from_utf8_lossy(&cmd_create_ok.stdout).trim_end()),
+                                        "Status": "Created"
                                     }
                                 );
                                 // Get USER-AGENT from request header, ugly but works.
@@ -1152,8 +1420,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                                 let data = json!(
                                     {
                                         "Code": 400,
-                                        "Message": "Bad Request: Could not create secret",
-                                        "Error": format!("{}", format!("{}",&cmd_create_ok.status).trim_end().replace("\n", ", "))
+                                        "Info": format!("{}", format!("{}",&cmd_create_ok.status).trim_end().replace("\n", ", ")),
+                                        "Status": "Bad Request"
                                     }
                                 );
                             
@@ -1198,8 +1466,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                         let data = json!(
                             {
                                 "Code": 400,
-                                "Message": "Bad Request: Could not create secret",
-                                "Error": format!("{}", format!("{}",cmd_create_err).trim_end().replace("\n", ", "))
+                                "Info": format!("{}", format!("{}",cmd_create_err).trim_end().replace("\n", ", ")),
+                                "Status": "Bad Request"
                             }
                         );
                         // Get USER-AGENT from request header, ugly but works.
@@ -1236,8 +1504,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not create secret",
-                        "Error": "Either the secret already exists or invalid input was given"
+                        "Info": "Either the secret already exists or invalid input was given",
+                        "Status": "Bad Request"
                     }
                 );
                 // Get USER-AGENT from request header, ugly but works.
@@ -1274,8 +1542,8 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": "Unknown Error"
+                    "Info": "Server returned unknown response",
+                    "Status": "Internal Server Error"
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -1324,8 +1592,8 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Information provided is not in correct format.",
-                "Error": "Bad Request"
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -1376,9 +1644,10 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
                 // Clean data from unneeded characters.
                 let data = json!(
                     {
-                        "Code": 201,
-                        "Message": "Image successfully pulled",
-                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim())
+                        "Code": "201",
+                        "Info": "Image successfully pulled",
+                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim()),
+                        "Status": "Created"
                     }
                 );
 
@@ -1435,8 +1704,8 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not process data",
-                        "Error": format!("{}",err_output)
+                        "Info": format!("{}",err_output),
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -1477,8 +1746,8 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -1531,8 +1800,8 @@ pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: H
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Information provided is not in correct format.",
-                "Error": "Bad Request"
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -1581,7 +1850,8 @@ pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: H
             let data = json!(
                 {
                     "Code": 200,
-                    "Message": "Successfully logged in to repository",
+                    "Info": "Successfully logged in to repository",
+                    "Status": "OK"
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -1629,8 +1899,8 @@ pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: H
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": err_output,
-                    "Error": "Bad Request",
+                    "Info": err_output,
+                    "Status": "Bad Request",
                 }
             );
 
@@ -1681,8 +1951,8 @@ pub async fn post_common_repository_logout(sdata: web::Json<RepoLogOut>,reqdata:
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Information provided is not in correct format.",
-                "Error": "Bad Request"
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -1732,6 +2002,7 @@ pub async fn post_common_repository_logout(sdata: web::Json<RepoLogOut>,reqdata:
                 {
                     "Code": 200,
                     "Message": "Successfully logged out from repository",
+                    "Status": "OK"
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -1776,8 +2047,8 @@ pub async fn post_common_repository_logout(sdata: web::Json<RepoLogOut>,reqdata:
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": err_output,
-                    "Error": "Bad Request",
+                    "Info": err_output,
+                    "Status": "Bad Request",
                 }
             );
 
@@ -1828,8 +2099,8 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -1876,8 +2147,8 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Please check you data",
-                "Error": "Invalid Information"
+                "Info": "Information missing or bad data",
+                "Status": "Bad Request"
             }
         );
 
@@ -1924,9 +2195,10 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Code": "200",
-                        "Name": format!("File '{}.env' has been deleted",jdata.name),
-                        "State": "Deleted"
+                        "Code": 200,
+                        "Info": "File has been deleted",
+                        "File": format!("{}.env",jdata.name),
+                        "Status": "OK"
                     }
                 );
 
@@ -1965,8 +2237,8 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Please check you data",
-                        "Error": "Invalid Information"
+                        "Info": "File could not be deleted",
+                        "Status": "Bad Request"
                     }
                 );
             
@@ -2008,8 +2280,8 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Please check your input",
-                "Error": "Invalid Information"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -2060,8 +2332,8 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -2108,8 +2380,8 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Please check you data",
-                "Error": "Invalid Information"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -2156,9 +2428,10 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Code": "200",
-                        "Name": format!("File '{}.tmp' has been deleted",jdata.name),
-                        "State": "Deleted"
+                        "Code": 200,
+                        "Info": "File has been deleted",
+                        "File": format!("{}.tmp",jdata.name),
+                        "Status": "OK"
                     }
                 );
 
@@ -2197,8 +2470,8 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Please check you data",
-                        "Error": "Invalid Information"
+                        "Info": "File could nbot be deleted",
+                        "Status": "Bad Request"
                     }
                 );
             
@@ -2240,8 +2513,8 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Please check your input",
-                "Error": "Invalid Information"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -2302,9 +2575,9 @@ pub async fn delete_common_images(sdata: web::Json<DeleteImages>, reqdata: HttpR
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Code": "200",
+                        "Code": 200,
                         "Name": "Unused images has been deleted",
-                        "State": "Deleted"
+                        "Status": "OK"
                     }
                 );   
                 // Get USER-AGENT from request header, ugly but works.
@@ -2339,8 +2612,8 @@ pub async fn delete_common_images(sdata: web::Json<DeleteImages>, reqdata: HttpR
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Please check you data",
-                        "Error": "Invalid Information"
+                        "Info": "Could not prune images",
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -2382,8 +2655,8 @@ pub async fn delete_common_images(sdata: web::Json<DeleteImages>, reqdata: HttpR
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Please check your input",
-                "Error": "Invalid Information"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
         // Get USER-AGENT from request header, ugly but works.
@@ -2418,7 +2691,7 @@ pub async fn delete_common_images(sdata: web::Json<DeleteImages>, reqdata: HttpR
 /* --- Containers API --- */
 
 // Get all containers status information.
-pub async fn get_containers_status(reqdata: HttpRequest) -> io::Result<HttpResponse> {
+pub async fn get_containers_state(reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // The command.
     let cmd = Command::new("podman")
         .arg("ps")
@@ -2480,8 +2753,8 @@ pub async fn get_containers_status(reqdata: HttpRequest) -> io::Result<HttpRespo
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -2518,11 +2791,10 @@ pub async fn get_containers_status(reqdata: HttpRequest) -> io::Result<HttpRespo
     }
 }
 
-// Get containers with a specific status.
-pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+// Get containers with a specific state.
+pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Create arg_input variable.
-    #[allow(unused_assignments)]
-    let mut arg_input= String::new();
+    let arg_input;
     // Check param from input, must match.
     match param.as_str() {
         "created" => { arg_input = format!("status={}", param); },
@@ -2539,8 +2811,8 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: not a valid status option",
-                "Error": "Invalid Options"
+                "Info": "Not a valid status option",
+                "Status": "Bad Request"
             }
         );
         
@@ -2682,8 +2954,311 @@ pub async fn get_containers_status_query(param: web::Path<String>,reqdata: HttpR
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(500,"Internal Server Error",6,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
+// Get state of a single container.
+pub async fn get_single_state_container_query(param: web::Path<String>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get input data from post.
+    let indata= param;
+
+    // Regex for non allowed characters.
+    let rx_nameid = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+
+    // Check if regex matches anything in name.
+    if indata.is_empty() || rx_nameid.find(&&indata.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // The command for getting via name.
+    let cmd_name = Command::new("podman")
+        .arg("container")
+        .arg("ps")
+        .arg("--all")
+        .arg("--filter")
+        .arg(format!("name={}",indata.clone()))
+        .arg(
+            "--format='
+            { \"Name\": {{json .Names}},
+            \"ID\": {{json .ID}},
+            \"State\": {{json .State}},
+            \"Status\": {{json .Status}},
+            \"Exited\": {{json .Exited}},
+            \"ExitCode\": {{json .ExitCode}} }'"
+        )
+        .output();
+
+    // Check if command went ok or not.
+    match cmd_name {
+        Ok(cmd_name_ok) => {
+            // Check length of stdout, returns empty response when no match occured.
+            let name_count = cmd_name_ok.stdout.len();
+            if name_count > 4 {
+                // Clean data from unneeded characters.
+                let data = format!("{}", String::from_utf8_lossy(&cmd_name_ok.stdout))
+                    .trim_start()
+                    .trim_end()
+                    .to_string()
+                    .replace("'", "")
+                    .replace(",\n]", "]");
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
+                // Return answer.
+                return Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .body(data) );
+            }
+            // Check if ID was given.
+            else {
+                // The command for getting via name.
+                let cmd_id = Command::new("podman")
+                    .arg("container")
+                    .arg("ps")
+                    .arg("--all")
+                    .arg("--filter")
+                    .arg(format!("id={}",indata.clone()))
+                    .arg(
+                        "--format='
+                        { \"Name\": {{json .Names}},
+                        \"ID\": {{json .ID}},
+                        \"State\": {{json .State}},
+                        \"Status\": {{json .Status}},
+                        \"Exited\": {{json .Exited}},
+                        \"ExitCode\": {{json .ExitCode}} }'"
+                    )
+                    .output();
+
+                // Check if command went ok or not.
+                match cmd_id {
+                    Ok(cmd_id_ok) => {
+                        // Check length of stdout, returns empty response when no match occured.
+                        let id_count = cmd_id_ok.stdout.len();
+                        if id_count > 4 {
+                            // Clean data from unneeded characters.
+                            let data = format!("{}", String::from_utf8_lossy(&cmd_id_ok.stdout))
+                                .trim_start()
+                                .trim_end()
+                                .to_string()
+                                .replace("'", "")
+                                .replace(",\n]", "]");
+                            // Get USER-AGENT from request header, ugly but works.
+                            let mut ua_string = String::new();
+                            for v in reqdata.headers().get_all(USER_AGENT) {
+                                ua_string = format!("{:?}",v);
+                            };
+
+                            // Vec for HttpRequest data to log.
+                            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                            let vlogdata = vec![
+                                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                                reqdata.connection_info().scheme().to_string(),
+                                reqdata.path().to_string(),
+                                reqdata.connection_info().host().to_string(),
+                                ua_string
+                            ];
+                            // Get log function and put requierd data into it.
+                            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+                            // Send information to log.
+                            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                            let _ = logs::send_logs(logdata);
+
+                            // Fetch headers.
+                            let vheaders = api_headers();
+
+                            // Return answer.
+                            return Ok( HttpResponse::Ok()
+                                .append_header(("api-version",vheaders[0].clone()))
+                                .content_type(vheaders[1].clone())
+                                .body(data) );
+                        }
+                        else {
+
+                            // Construct JSON object
+                            let data = json!(
+                                [
+                                    {
+                                        "Code": 404,
+                                        "Info": format!("No containers matching name or ID: {}",indata),
+                                        "Status": "Not Found"
+                                    }
+                                ]
+                            );
+                        
+                            // Get USER-AGENT from request header, ugly but works.
+                            let mut ua_string = String::new();
+                            for v in reqdata.headers().get_all(USER_AGENT) {
+                                ua_string = format!("{:?}",v);
+                            };
+                            // Vec for HttpRequest data to log.
+                            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                            let vlogdata = vec![
+                                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                                reqdata.connection_info().scheme().to_string(),
+                                reqdata.path().to_string(),
+                                reqdata.connection_info().host().to_string(),
+                                ua_string
+                            ];
+                            // Get log function and put requierd data into it.
+                            let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
+                            // Send information to log.
+                            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                            let _ = logs::send_logs(logdata);
+                        
+                            // Fetch headers.
+                            let vheaders = api_headers();
+                        
+                            // Return answer.
+                            return Ok( HttpResponse::NotFound()
+                                .append_header(("api-version",vheaders[0].clone()))
+                                .content_type(vheaders[1].clone())
+                                .json(data) );
+                        }
+                    }
+                    Err(cmd_id_err) => {
+                        // Construct JSON object
+                        let data = json!(
+                            {
+                                "Code": 500,
+                                "Info": format!("{}", cmd_id_err),
+                                "Status": "Internal Server Error"
+                            }
+                        );
+                    
+                        // Get USER-AGENT from request header, ugly but works.
+                        let mut ua_string = String::new();
+                        for v in reqdata.headers().get_all(USER_AGENT) {
+                            ua_string = format!("{:?}",v);
+                        };
+                        // Vec for HttpRequest data to log.
+                        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                        let vlogdata = vec![
+                            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                            reqdata.connection_info().scheme().to_string(),
+                            reqdata.path().to_string(),
+                            reqdata.connection_info().host().to_string(),
+                            ua_string
+                        ];
+                    
+                        // Get log function and put requierd data into it.
+                        let vlog: Vec<String> = logs::log_data(500,"Internal Server Error",6,"GET",vlogdata);
+                        // Send information to log.
+                        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                        let _ = logs::send_logs(logdata);
+                    
+                        // Fetch headers.
+                        let vheaders = api_headers();
+                    
+                        // Return answer.
+                        return Ok( HttpResponse::InternalServerError()
+                            .append_header(("api-version",vheaders[0].clone()))
+                            .content_type(vheaders[1].clone())
+                            .json(data) );
+                    }
+                }
+            }
+        }
+        Err(cmd_name_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 500,
+                    "Info": format!("{}", cmd_name_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -2753,8 +3328,8 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Check options tag, must be at least 4 characters long and start with -- to be valid",
-                    "Error": "Invalid Options"
+                    "Info": "Check options tag, must be at least 4 characters long and start with -- to be valid",
+                    "Status": "Bad Request"
                 }
             );
 
@@ -2805,8 +3380,8 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Required tags are missing information",
-                "Error": "Missing Information"
+                "Info": "Required tags are missing information",
+                "Status": "Bad Request"
             }
         );
 
@@ -2855,9 +3430,10 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
                 // Build answer.
                 let data = json!(
                     {
-                        "Status": "201",
-                        "Message": "Successfully created container",
-                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim_end())
+                        "Code": "201",
+                        "Info": "Successfully created container",
+                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim_end()),
+                        "Status": "Created"
                     }
                 );
 
@@ -2898,8 +3474,8 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not create container",
-                        "Error": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", "))
+                        "Info": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", ")),
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -2940,8 +3516,8 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err).trim_end(),
+                    "Info": format!("{}", cmd_err).trim_end(),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -3008,8 +3584,8 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: State/Name provided is not in correct format or a valid state",
-                "Error": "Invalid Information"
+                "Info": "State/Name provided is not in correct format or a valid state",
+                "Status": "Bad Request"
             }
         );
 
@@ -3067,8 +3643,9 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Name": result,
-                        "State": jdata.state
+                        "Code": 200,
+                        "Info": format!("Container '{}' has been set to '{}' state",result,jdata.state),
+                        "Status": "OK"
                     }
                 );
 
@@ -3149,8 +3726,8 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -3201,8 +3778,8 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Name provided is not in correct format.",
-                "Error": "Bad Request"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -3243,8 +3820,8 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check you data",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -3316,9 +3893,9 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
                     // Construct JSON object.
                     let data = json!(
                         {
-                            "Code": "200",
-                            "Name": format!("Container '{}' has been deleted",jdata.name),
-                            "State": "Deleted"
+                            "Code": 200,
+                            "Info": format!("Container '{}' has been deleted",jdata.name),
+                            "Status": "OK"
                         }
                     );
 
@@ -3354,13 +3931,12 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
 
                 }
                 else {
-
                 // Construct JSON object
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Please check you data",
-                        "Error": "Bad Request"
+                        "Info": "Could not remove container",
+                        "Status": "Bad Request"
                     }
                 );
             
@@ -3402,8 +3978,8 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Container is not in 'exited' state or do not exist",
-                        "Error": "Bad Request"
+                        "Info": "Container is not in 'exited' state or do not exist",
+                        "Status": "Bad Request"
                     }
                 );
             
@@ -3445,8 +4021,8 @@ pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check your input",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -3497,8 +4073,8 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Name provided is not in correct format.",
-                "Error": "Bad Request"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -3539,8 +4115,8 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check you data",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -3593,9 +4169,9 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Code": "200",
-                        "Name": format!("Volume '{}' has been deleted",jdata.name),
-                        "State": "Deleted"
+                        "Code": 200,
+                        "Info": format!("Volume '{}' has been deleted",jdata.name),
+                        "Status": "OK"
                     }
                 );
                 // Get USER-AGENT from request header, ugly but works.
@@ -3630,8 +4206,8 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": format!("Cannot remove volume '{}', still used or do not exist",jdata.name),
-                    "Error": "Bad Request",
+                    "Info": format!("Cannot remove volume '{}', still used or do not exist",jdata.name),
+                    "Status": "Bad Request",
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -3668,8 +4244,8 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check your input",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -3769,8 +4345,8 @@ pub async fn get_pods_status(reqdata: HttpRequest) -> io::Result<HttpResponse> {
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -3810,8 +4386,7 @@ pub async fn get_pods_status(reqdata: HttpRequest) -> io::Result<HttpResponse> {
 // Get Pods with a specific status.
 pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Create arg_input variable.
-    #[allow(unused_assignments)]
-    let mut arg_input= String::new();
+    let arg_input;
     // Check param from input, must match.
     match param.as_str() {
         "created" => { arg_input = format!("status={}", param); },
@@ -3842,8 +4417,8 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not process data",
-                        "Error": "Bad Status"
+                        "Info": "Could not process data",
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -3969,8 +4544,303 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
+                }
+            );
+
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(500,"Internal Server Error",6,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+
+            // Fetch headers.
+            let vheaders = api_headers();
+
+            // Return answer.
+            Ok( HttpResponse::InternalServerError()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) )
+        }
+    }
+}
+
+// Get state of a single pod.
+pub async fn get_single_state_pod_query(param: web::Path<String>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get input data from post.
+    let indata= param;
+
+    // Regex for non allowed characters.
+    let rx_nameid = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+
+    // Check if regex matches anything in name.
+    if indata.is_empty() || rx_nameid.find(&&indata.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Info": "Information provided is not in correct format",
+                "Status": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // The command for getting via name.
+    let cmd_name = Command::new("podman")
+        .arg("pod")
+        .arg("ps")
+        .arg("--filter")
+        .arg(format!("name={}",indata.clone()))
+        .arg(
+            "--format='
+            { \"Name\": {{json .Name}},
+            \"ID\": {{json .Id}},
+            \"Status\": {{json .Status}} }'"
+        )
+        .output();
+
+    // Check if command went ok or not.
+    match cmd_name {
+        Ok(cmd_name_ok) => {
+            // Check length of stdout, returns empty response when no match occured.
+            let name_count = cmd_name_ok.stdout.len();
+            if name_count > 4 {
+                // Clean data from unneeded characters.
+                let data = format!("{}", String::from_utf8_lossy(&cmd_name_ok.stdout))
+                    .trim_start()
+                    .trim_end()
+                    .to_string()
+                    .replace("'", "")
+                    .replace(",\n]", "]");
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+
+                // Fetch headers.
+                let vheaders = api_headers();
+
+                // Return answer.
+                return Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .body(data) );
+            }
+            // Check if ID was given.
+            else {
+                // The command for getting via name.
+                let cmd_id = Command::new("podman")
+                    .arg("pod")
+                    .arg("ps")
+                    .arg("--filter")
+                    .arg(format!("id={}",indata.clone()))
+                    .arg(
+                        "--format='
+                        { \"Name\": {{json .Name}},
+                        \"ID\": {{json .Id}},
+                        \"Status\": {{json .Status}} }'"
+                    )
+                    .output();
+
+                // Check if command went ok or not.
+                match cmd_id {
+                    Ok(cmd_id_ok) => {
+                        // Check length of stdout, returns empty response when no match occured.
+                        let id_count = cmd_id_ok.stdout.len();
+                        if id_count > 4 {
+                            // Clean data from unneeded characters.
+                            let data = format!("{}", String::from_utf8_lossy(&cmd_id_ok.stdout))
+                                .trim_start()
+                                .trim_end()
+                                .to_string()
+                                .replace("'", "")
+                                .replace(",\n]", "]");
+                            // Get USER-AGENT from request header, ugly but works.
+                            let mut ua_string = String::new();
+                            for v in reqdata.headers().get_all(USER_AGENT) {
+                                ua_string = format!("{:?}",v);
+                            };
+
+                            // Vec for HttpRequest data to log.
+                            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                            let vlogdata = vec![
+                                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                                reqdata.connection_info().scheme().to_string(),
+                                reqdata.path().to_string(),
+                                reqdata.connection_info().host().to_string(),
+                                ua_string
+                            ];
+                            // Get log function and put requierd data into it.
+                            let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
+                            // Send information to log.
+                            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                            let _ = logs::send_logs(logdata);
+
+                            // Fetch headers.
+                            let vheaders = api_headers();
+
+                            // Return answer.
+                            return Ok( HttpResponse::Ok()
+                                .append_header(("api-version",vheaders[0].clone()))
+                                .content_type(vheaders[1].clone())
+                                .body(data) );
+                        }
+                        else {
+
+                            // Construct JSON object
+                            let data = json!(
+                                [
+                                    {
+                                        "Code": 404,
+                                        "Info": format!("No containers matching name or ID: {}",indata),
+                                        "Status": "Not Found"
+                                    }
+                                ]
+                            );
+                        
+                            // Get USER-AGENT from request header, ugly but works.
+                            let mut ua_string = String::new();
+                            for v in reqdata.headers().get_all(USER_AGENT) {
+                                ua_string = format!("{:?}",v);
+                            };
+                            // Vec for HttpRequest data to log.
+                            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                            let vlogdata = vec![
+                                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                                reqdata.connection_info().scheme().to_string(),
+                                reqdata.path().to_string(),
+                                reqdata.connection_info().host().to_string(),
+                                ua_string
+                            ];
+                            // Get log function and put requierd data into it.
+                            let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
+                            // Send information to log.
+                            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                            let _ = logs::send_logs(logdata);
+                        
+                            // Fetch headers.
+                            let vheaders = api_headers();
+                        
+                            // Return answer.
+                            return Ok( HttpResponse::NotFound()
+                                .append_header(("api-version",vheaders[0].clone()))
+                                .content_type(vheaders[1].clone())
+                                .json(data) );
+                        }
+                    }
+                    Err(cmd_id_err) => {
+                        // Construct JSON object
+                        let data = json!(
+                            {
+                                "Code": 500,
+                                "Info": format!("{}", cmd_id_err),
+                                "Status": "Internal Server Error"
+                            }
+                        );
+                    
+                        // Get USER-AGENT from request header, ugly but works.
+                        let mut ua_string = String::new();
+                        for v in reqdata.headers().get_all(USER_AGENT) {
+                            ua_string = format!("{:?}",v);
+                        };
+                        // Vec for HttpRequest data to log.
+                        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                        let vlogdata = vec![
+                            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                            reqdata.connection_info().scheme().to_string(),
+                            reqdata.path().to_string(),
+                            reqdata.connection_info().host().to_string(),
+                            ua_string
+                        ];
+                    
+                        // Get log function and put requierd data into it.
+                        let vlog: Vec<String> = logs::log_data(500,"Internal Server Error",6,"GET",vlogdata);
+                        // Send information to log.
+                        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                        let _ = logs::send_logs(logdata);
+                    
+                        // Fetch headers.
+                        let vheaders = api_headers();
+                    
+                        // Return answer.
+                        return Ok( HttpResponse::InternalServerError()
+                            .append_header(("api-version",vheaders[0].clone()))
+                            .content_type(vheaders[1].clone())
+                            .json(data) );
+                    }
+                }
+            }
+        }
+        Err(cmd_name_err) => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 500,
+                    "Info": format!("{}", cmd_name_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -4041,8 +4911,8 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Check options tag, must be at least 4 characters long and start with -- to be valid",
-                    "Error": "Invalid Options"
+                    "Info": "Check options tag, must be at least 4 characters long and start with -- to be valid",
+                    "Status": "Bad Request"
                 }
             );
 
@@ -4083,8 +4953,8 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Required tags are missing information",
-                "Error": "Missing Information"
+                "Info": "Required tags are missing information",
+                "Status": "Bad Request"
             }
         );
 
@@ -4140,9 +5010,10 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
                 // Build answer.
                 let data = json!(
                     {
-                        "Status": "201",
-                        "Message": "Successfully created pod",
+                        "Code": "201",
+                        "Info": "Successfully created pod",
                         "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim_end()),
+                        "Status": "Created"
                     }
                 );
 
@@ -4183,8 +5054,8 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not create pod",
-                        "Error": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", ")),
+                        "Info": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", ")),
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -4225,8 +5096,8 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err).trim_end(),
+                    "Info": format!("{}", cmd_err).trim_end(),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -4292,8 +5163,8 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: State/Name provided is not correct format or value",
-                "Error": "Invalid Value"
+                "Info": "State/Name provided is not correct format or value",
+                "Status": "Bad Request"
             }
         );
 
@@ -4351,8 +5222,9 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Name": result,
-                        "State": jdata.state
+                        "Code": 200,
+                        "Info": format!("Sucessfully set Pod '{}' state to '{}'",result,jdata.state),
+                        "Status": "OK" 
                     }
                 );
 
@@ -4392,7 +5264,7 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                     {
                         "Code": 404,
                         "Info": format!("No pod handled based on given input state: {}",arg_input),
-                        "State": "None"
+                        "Status": "Not Found"
                     }
                 );
 
@@ -4431,8 +5303,8 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not send data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -4483,8 +5355,8 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -4525,8 +5397,8 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check you data",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -4590,9 +5462,9 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
                     // Construct JSON object.
                     let data = json!(
                         {
-                            "Code": "200",
+                            "Code": 200,
                             "Name": format!("Pod '{}' has been deleted",jdata.name),
-                            "State": "Deleted"
+                            "Status": "Ok"
                         }
                     );
                     // Get USER-AGENT from request header, ugly but works.
@@ -4627,8 +5499,8 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
                     let data = json!(
                         {
                             "Code": 400,
-                            "Message": format!("Cannot remove pod '{}'",jdata.name),
-                            "Error": "Bad Request",
+                            "Info": format!("Cannot remove pod '{}'",jdata.name),
+                            "Status": "Bad Request",
                         }
                     );
                     // Get USER-AGENT from request header, ugly but works.
@@ -4665,8 +5537,8 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": format!("Cannot remove pod '{}' check your data",jdata.name),
-                    "Error": "Bad Request",
+                    "Info": format!("Cannot remove pod '{}' check your data",jdata.name),
+                    "Status": "Bad Request",
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -4702,8 +5574,8 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check your input",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -4804,8 +5676,8 @@ pub async fn get_networks_info(reqdata: HttpRequest) -> io::Result<HttpResponse>
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Bad Request: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Bad Request"
                 }
             );
 
@@ -4896,8 +5768,8 @@ pub async fn get_networks_info_single(param: web::Path<String>,reqdata: HttpRequ
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: No network found with that name",
-                        "Error": "Empty Respons"
+                        "Info": "No network found with that name",
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -4938,8 +5810,8 @@ pub async fn get_networks_info_single(param: web::Path<String>,reqdata: HttpRequ
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err),
+                    "Info": format!("{}", cmd_err),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -5009,8 +5881,8 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": "Check options tag, must be at least 4 characters long and start with -- to be valid",
-                    "Error": "Invalid Options"
+                    "Info": "Check options tag, must be at least 4 characters long and start with -- to be valid",
+                    "Status": "Bad Request"
                 }
             );
 
@@ -5052,8 +5924,8 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Required tags are missing information",
-                "Error": "Missing Information"
+                "Info": "Required tags are missing information",
+                "Status": "Bad Request"
             }
         );
 
@@ -5109,9 +5981,10 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
                 // Build answer.
                 let data = json!(
                     {
-                        "Status": "201",
-                        "Message": "Successfully created network",
-                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim_end())
+                        "Code": "201",
+                        "Info": "Successfully created network",
+                        "ID": format!("{}", String::from_utf8_lossy(&cmd_ok.stdout).trim_end()),
+                        "Status": "Created"
                     }
                 );
 
@@ -5152,8 +6025,8 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": "Bad Request: Could not create network",
-                        "Error": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", ")),
+                        "Info": format!("{}", String::from_utf8_lossy(&cmd_ok.stderr).trim_end().replace("\n", ", ")),
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -5194,8 +6067,8 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
             let data = json!(
                 {
                     "Code": 500,
-                    "Message": "Internal Server Error: Could not process data",
-                    "Error": format!("{}", cmd_err).trim_end(),
+                    "Info": format!("{}", cmd_err).trim_end(),
+                    "Status": "Internal Server Error"
                 }
             );
 
@@ -5246,8 +6119,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Bad Request: Name provided is not in correct format.",
-                "Error": "Invalid Information"
+                "Info": "Name provided is not in correct format",
+                "Status": "Bad Request"
             }
         );
 
@@ -5288,8 +6161,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check you data",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
@@ -5345,8 +6218,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
                     let data = json!(
                         {
                             "Code": 400,
-                            "Message": format!("Network '{}' has containers attached or do not exist",jdata.name),
-                            "Error": "Bad Request"
+                            "Info": format!("Network '{}' has containers attached or do not exist",jdata.name),
+                            "Status": "Bad Request"
                         }
                     );
 
@@ -5386,8 +6259,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
                 let data = json!(
                     {
                         "Code": 400,
-                        "Message": format!("{}", cmd_err),
-                        "Error": "Bad Request",
+                        "Info": format!("{}", cmd_err),
+                        "Status": "Bad Request",
                     }
                 );
 
@@ -5435,9 +6308,9 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
                 // Construct JSON object.
                 let data = json!(
                     {
-                        "Code": "200",
-                        "Name": format!("Network '{}' has been deleted",jdata.name),
-                        "State": "Deleted"
+                        "Code": 200,
+                        "Info": format!("Network '{}' has been deleted",jdata.name),
+                        "Status": "OK"
                     }
                 );
                 // Get USER-AGENT from request header, ugly but works.
@@ -5472,8 +6345,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
             let data = json!(
                 {
                     "Code": 400,
-                    "Message": format!("Cannot remove network '{}', still connected or do not exist",jdata.name),
-                    "Error": "Bad Request",
+                    "Info": format!("Cannot remove network '{}', still connected or do not exist",jdata.name),
+                    "Status": "Bad Request",
                 }
             );
             // Get USER-AGENT from request header, ugly but works.
@@ -5510,8 +6383,8 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
         let data = json!(
             {
                 "Code": 400,
-                "Message": "Please check your input",
-                "Error": "Bad Request"
+                "Info": "Missing or incorrect data",
+                "Status": "Bad Request"
             }
         );
 
