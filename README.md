@@ -77,9 +77,13 @@ Endpoints:
 > 
 > /v1/common/getInfo
 >
-> /v1/common/getImageListShort
+> /v1/common/getImageList
 >
-> /v1/common/getImageListDetailed
+> /v1/common/getEnfFiles
+>
+> /v1/common/getSecretFiles
+> 
+> /v1/common/postImageListSingle
 > 
 > /v1/common/postEnvFileCreate
 >
@@ -106,6 +110,8 @@ Endpoints:
 >
 > /v1/containers/getState/\<id\>
 >
+> /v1/containers/getStateSingle/\<id\>
+>
 > /v1/containers/postContainerCreate
 >
 > /v1/containers/postSetState
@@ -123,6 +129,8 @@ Endpoints:
 >
 > /v1/pods/getState/\<id\>
 >
+> /v1/pods/getStateSingle/\<id\>
+> 
 > /v1/pods/postPodCreate
 >
 > /v1/pods/postSetState
@@ -136,7 +144,7 @@ All interfaces related to network management resides under here.
 Endpoints:
 > /v1/networks/getInfo
 >
-> /v1/networks/getInfo/\<id\>
+> /v1/networks/getInfoSingle/\<id\>
 >
 > /v1/networks/postNetworkCreate
 >
