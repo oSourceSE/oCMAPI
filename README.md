@@ -79,7 +79,7 @@ Endpoints:
 >
 > /v1/common/getImageList
 >
-> /v1/common/getEnfFiles
+> /v1/common/getEnvFiles
 >
 > /v1/common/getSecretFiles
 > 
