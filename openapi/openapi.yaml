@@ -1,108 +1,11 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.1.0
+  version: 1.1.1
   license: 
     name: BSD License
     url: https://www.osource.se/license.html
 paths:
-  /v1/common/getImageList:
-    get:
-      summary: getImageList
-      operationId: common_getimagelist
-      description: Get basic information about all images that exists on the server.
-      tags:
-        - Common
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  items:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                      properties:
-                        type: object
-                        properties:
-                          Names:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-                              items:
-                                type: object
-                                properties:
-                                  type:
-                                    type: string
-                          ImageSize:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-                          Created:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-              example:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: array
-                      items:
-                        type: string
-                    ImageSize:
-                      type: integer
-                    Created:
-                      type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getimagelist: []
   /v1/common/getInfo:
     get:
       summary: getInfo
@@ -951,96 +854,6 @@ paths:
           example: application/json
       security:
         - getinfo: []
-  /v1/common/getEnvFiles:
-    get:
-      summary: getEnvFiles
-      operationId: common_getenvfiles
-      description: Endpoint for listing `ENV` files residing on the server.
-      tags:
-        - Common
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Files:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  State:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Files:
-                  type: string
-                Info:
-                  type: string
-                State:
-                  type: integer
-                Status:
-                  type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getenvfiles: []
   /v1/common/getSecretFiles:
     get:
       summary: getSecretFiles
@@ -1381,61 +1194,16 @@ paths:
           example: application/json
       security:
         - getversion: []
-  /v1/common/postEnvFileCreate:
-    post:
-      summary: postEnvFileCreate
-      operationId: common_postenvfilecreate
-      description: >-
-        Create or replace an `env` file with parameters used in containers, good
-        for moving variables like `usernames`, `passwords` and so on from the
-        create command when creating a container.
-
-
-        The file will automatically get the `.env` added at the end, so the
-        `name` tag should only contain the name you want to give it.
-
-
-        the `content` data must be separated with a `|` in order for the API to
-        successfully split the data into correct format, there are no need to
-        add an `|` after final variable.
-
-
-        Example:
-
-
-        ``` json
-
-        {
-          "name": "filename",
-          "content": "USER=user|PASS=password",
-          "replace": "no"
-        }
-
-         ```
-
-        You can overwrite an existing file by setting the `replace` tag to yes,
-        otherwise it will not do anything if the file already exists. The
-        `replace` tag can only consist of the words `yes` or `no`, if you put
-        something else here it will halt and error out.
-
-
-        Example:
-
-
-        ``` json
-
-        {
-          "name": "filename",
-          "content": "USER=user|PASS=password",
-          "replace": "yes"
-        }
-
-         ```
+  /v1/common/getEnvFiles:
+    get:
+      summary: getEnvFiles
+      operationId: common_getenvfiles
+      description: Endpoint for listing `ENV` files residing on the server.
       tags:
         - Common
       responses:
-        '201':
-          description: Created
+        '200':
+          description: OK
           content:
             application/json:
               schema:
@@ -1446,12 +1214,17 @@ paths:
                     properties:
                       type:
                         type: string
+                  Files:
+                    type: object
+                    properties:
+                      type:
+                        type: string
                   Info:
                     type: object
                     properties:
                       type:
                         type: string
-                  File:
+                  State:
                     type: object
                     properties:
                       type:
@@ -1464,10 +1237,12 @@ paths:
               example:
                 Code:
                   type: integer
+                Files:
+                  type: string
                 Info:
                   type: string
-                File:
-                  type: string
+                State:
+                  type: integer
                 Status:
                   type: string
         '400':
@@ -1500,13 +1275,6 @@ paths:
                 Status:
                   type: string
       parameters:
-        - name: Content-Type
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
         - name: Accept
           in: header
           description: ''
@@ -1514,10 +1282,105 @@ paths:
           schema:
             type: string
           example: application/json
-      requestBody:
-        $ref: '#/components/requestBodies/postenvfilecreate'
       security:
-        - postenvfilecreate: []
+        - getenvfiles: []
+  /v1/common/getImageList:
+    get:
+      summary: getImageList
+      operationId: common_getimagelist
+      description: Get basic information about all images that exists on the server.
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      properties:
+                        type: object
+                        properties:
+                          Names:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          ImageSize:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          Created:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+              example:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: array
+                      items:
+                        type: string
+                    ImageSize:
+                      type: integer
+                    Created:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getimagelist: []
   /v1/common/postGetRepoImage:
     post:
       summary: postGetRepoImage
@@ -1634,7 +1497,10 @@ paths:
     post:
       summary: postImageListSingle
       operationId: common_postimagelistsingle
-      description: Get detailed information about a single image on the server.
+      description: |-
+        Get detailed information about a single image on the server.
+
+        Will return empty response if image do not exist on the server.
       tags:
         - Common
       responses:
@@ -2297,6 +2163,143 @@ paths:
         $ref: '#/components/requestBodies/postsecretcreate'
       security:
         - postsecretcreate: []
+  /v1/common/postEnvFileCreate:
+    post:
+      summary: postEnvFileCreate
+      operationId: common_postenvfilecreate
+      description: >-
+        Create or replace an `env` file with parameters used in containers, good
+        for moving variables like `usernames`, `passwords` and so on from the
+        create command when creating a container.
+
+
+        The file will automatically get the `.env` added at the end, so the
+        `name` tag should only contain the name you want to give it.
+
+
+        the `content` data must be separated with a `|` in order for the API to
+        successfully split the data into correct format, there are no need to
+        add an `|` after final variable.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "filename",
+          "content": "USER=user|PASS=password",
+          "replace": "no"
+        }
+
+         ```
+
+        You can overwrite an existing file by setting the `replace` tag to yes,
+        otherwise it will not do anything if the file already exists. The
+        `replace` tag can only consist of the words `yes` or `no`, if you put
+        something else here it will halt and error out.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "filename",
+          "content": "USER=user|PASS=password",
+          "replace": "yes"
+        }
+
+         ```
+      tags:
+        - Common
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  File:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                File:
+                  type: string
+                Status:
+                  type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postenvfilecreate'
+      security:
+        - postenvfilecreate: []
   /v1/common/deleteEnvFile:
     delete:
       summary: deleteEnvFile
@@ -2629,6 +2632,116 @@ paths:
         $ref: '#/components/requestBodies/deletesecfile'
       security:
         - deletesecfile: []
+  /v1/containers/getShortList/<type>:
+    get:
+      summary: getShortList/<type>
+      operationId: containers_getshortlist
+      description: >-
+        Get a complete list of `containers` either by `name` or `ID` for further
+        processing.
+
+
+        Replace `<type>` with either of the words `name` or `id` to choose type
+        of list to get.
+
+
+        Note!! `infra` containers are excluded since they should never be
+        handled as `standalone` containers, they should always be handled via
+        `pods` endpoints.
+
+
+        Normal `containers` that are connected to a `pod` will be visible here
+        and if you are using this list for mass shutdown and startup i recommend
+        you start/stop `pods` first in you automation chain.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Names/ID:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                Names/ID:
+                  - type: string
+                  - type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getshortlist_type: []
   /v1/containers/getState/created:
     get:
       summary: getState/created
@@ -3536,7 +3649,7 @@ paths:
   /v1/containers/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: containers_getstatesingle--id-
+      operationId: containers_getstatesingle
       description: >
         Get container status for a single container.
 
@@ -4162,11 +4275,17 @@ paths:
         $ref: '#/components/requestBodies/deletevolume'
       security:
         - deletevolume: []
-  /v1/pods/getState:
+  /v1/pods/getShortList/<type>:
     get:
-      summary: getState
-      operationId: pods_getstate
-      description: Get state for all pods exisintg on the server.
+      summary: getShortList/<type>
+      operationId: pods_getshortlist
+      description: >
+        Get a complete list of `pods` either by `name` or `ID` for further
+        processing.
+
+
+        Replace `<type>` with either of the words `name` or `id` to choose type
+        of list to get.
       tags:
         - Pods
       responses:
@@ -4175,40 +4294,50 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
+                type: object
+                properties:
+                  Names/ID:
+                    type: array
+                    items:
                       type: object
                       properties:
                         type:
                           type: string
               example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
+                Names/ID:
+                  - type: string
+                  - type: string
         '400':
           description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
           content:
             application/json:
               schema:
@@ -4245,7 +4374,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate: []
+        - getshortlist_type_1: []
   /v1/pods/getState/created:
     get:
       summary: getState/created
@@ -4387,7 +4516,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate_created: []
+        - getstate_created_1: []
   /v1/pods/getState/exited:
     get:
       summary: getState/exited
@@ -4529,7 +4658,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate_exited: []
+        - getstate_exited_1: []
   /v1/pods/getState/paused:
     get:
       summary: getState/paused
@@ -4671,7 +4800,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate_paused: []
+        - getstate_paused_1: []
   /v1/pods/getState/running:
     get:
       summary: getState/running
@@ -4813,7 +4942,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate_running: []
+        - getstate_running_1: []
   /v1/pods/getState/unknown:
     get:
       summary: getState/unknown
@@ -4955,11 +5084,95 @@ paths:
             type: string
           example: application/json
       security:
-        - getstate_unknown: []
+        - getstate_unknown_1: []
+  /v1/pods/getState:
+    get:
+      summary: getState
+      operationId: pods_getstate
+      description: Get state for all pods exisintg on the server.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_1: []
   /v1/pods/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: pods_getstatesingle--id-
+      operationId: pods_getstatesingle
       description: |-
         Get status for a single pod, whether it is running, exited and so on.
 
@@ -5063,7 +5276,7 @@ paths:
             type: string
           example: application/json
       security:
-        - getstatesingle_id: []
+        - getstatesingle_id_1: []
   /v1/pods/postPodCreate:
     post:
       summary: postPodCreate
@@ -5083,7 +5296,7 @@ paths:
 
         {
           "name": "name",
-          "options": "--option1,--option2='value'"
+          "options": "--option1,--option2=value"
         }
 
          ```
@@ -5367,9 +5580,9 @@ paths:
             type: string
           example: application/json
       requestBody:
-        $ref: '#/components/requestBodies/postsetstate'
+        $ref: '#/components/requestBodies/postsetstate_1'
       security:
-        - postsetstate: []
+        - postsetstate_1: []
   /v1/pods/deletePod:
     delete:
       summary: deletePod
@@ -5567,11 +5780,11 @@ paths:
             type: string
           example: application/json
       security:
-        - getinfo: []
+        - getinfo_1: []
   /v1/networks/getInfoSingle/<id>:
     get:
       summary: getInfoSingle/<id>
-      operationId: networks_getinfosingle--id-
+      operationId: networks_getinfosingle
       description: >-
         Get information on a specific network.
 
@@ -6061,7 +6274,7 @@ paths:
 
         {
           "name": "name",
-          "options": "--option1,--option2='value'"
+          "options": "--option1,--option2=value,--option3=paramaeter=value"
         }
 
          ```
@@ -6287,7 +6500,7 @@ paths:
       security:
         - deletenetwork: []
 servers:
-  - url: ''
+  - url: ""
     description: Base Server
 components:
   schemas:
@@ -6341,7 +6554,7 @@ components:
         version:
           type: string
       example:
-        repository: example.com/path/
+        repository: example.com/path
         image: image_name
         version: tag_name_or_version
     postimagelistsingle:
@@ -6428,7 +6641,7 @@ components:
         state:
           type: string
       example:
-        name: pod_name
+        name: container_name
         state: state_to_set
     deletenetwork:
       type: object
@@ -6448,8 +6661,8 @@ components:
         options:
           type: string
       example:
-        name: network_name
-        options: '--option1,--option2=''value'''
+        name: network-name
+        options: '--option1,--option2=value2,--option3=paramaeter=value'
     deletepod:
       type: object
       properties:
@@ -6469,7 +6682,17 @@ components:
           type: string
       example:
         name: pod_name
-        options: '--option1,--option2=''value2'''
+        options: '--option1,--option2=value2'
+    postsetstate_1:
+      type: object
+      properties:
+        name:
+          type: string
+        state:
+          type: string
+      example:
+        name: pod_name
+        state: state_to_set
   requestBodies:
     deleteenvfile:
       content:
@@ -6590,6 +6813,13 @@ components:
             $ref: '#/components/schemas/postpodcreate'
       description: ''
       required: true
+    postsetstate_1:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postsetstate_1'
+      description: ''
+      required: true
   securitySchemes:
     deleteenvfile:
       type: http
@@ -6598,6 +6828,9 @@ components:
       type: http
       scheme: basic
     deletesecfile:
+      type: http
+      scheme: basic
+    getenvfiles:
       type: http
       scheme: basic
     getimagelist:
@@ -6633,13 +6866,13 @@ components:
     postsecretcreate:
       type: http
       scheme: basic
-    getenvfiles:
-      type: http
-      scheme: basic
     deletecontainer:
       type: http
       scheme: basic
     deletevolume:
+      type: http
+      scheme: basic
+    getshortlist_type:
       type: http
       scheme: basic
     getstate_created:
@@ -6672,6 +6905,9 @@ components:
     deletenetwork:
       type: http
       scheme: basic
+    getinfo_1:
+      type: http
+      scheme: basic
     getinfosingle_id:
       type: http
       scheme: basic
@@ -6681,6 +6917,33 @@ components:
     deletepod:
       type: http
       scheme: basic
+    getshortlist_type_1:
+      type: http
+      scheme: basic
+    getstate_created_1:
+      type: http
+      scheme: basic
+    getstate_exited_1:
+      type: http
+      scheme: basic
+    getstate_paused_1:
+      type: http
+      scheme: basic
+    getstate_running_1:
+      type: http
+      scheme: basic
+    getstate_unknown_1:
+      type: http
+      scheme: basic
+    getstate_1:
+      type: http
+      scheme: basic
+    getstatesingle_id_1:
+      type: http
+      scheme: basic
     postpodcreate:
+      type: http
+      scheme: basic
+    postsetstate_1:
       type: http
       scheme: basic

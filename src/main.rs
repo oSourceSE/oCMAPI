@@ -122,7 +122,8 @@ async fn http_server() -> std::io::Result<()> {
                     // Containers API
                     .route("/v1/containers/getState", web::get().guard(guard::Get()).to(handlers::get_containers_state))
                     .route("/v1/containers/getState/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_state_query))
-                    .route("/v1/containers/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_single_state_container_query))
+                    .route("/v1/containers/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_single_state_query))
+                    .route("/v1/containers/getShortList/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_short_list))
                     .route("/v1/containers/postContainerCreate", web::post().guard(guard::Post()).to(handlers::post_containers_create))
                     .route("/v1/containers/postSetState", web::post().guard(guard::Post()).to(handlers::post_containers_setstate))
                     .route("/v1/containers/deleteContainer", web::delete().guard(guard::Delete()).to(handlers::delete_containers_data))
@@ -130,7 +131,8 @@ async fn http_server() -> std::io::Result<()> {
                     // Pods API
                     .route("/v1/pods/getState", web::get().guard(guard::Get()).to(handlers::get_pods_status))
                     .route("/v1/pods/getState/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_status_query))
-                    .route("/v1/pods/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_single_state_pod_query))
+                    .route("/v1/pods/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_single_state_query))
+                    .route("/v1/pods/getShortList/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_short_list))
                     .route("/v1/pods/postPodCreate", web::post().guard(guard::Post()).to(handlers::post_pods_create))
                     .route("/v1/pods/postSetState", web::post().guard(guard::Post()).to(handlers::post_pods_setstate))
                     .route("/v1/pods/deletePod", web::delete().guard(guard::Delete()).to(handlers::delete_pods_data))
@@ -202,7 +204,8 @@ async fn https_server() -> std::io::Result<()> {
                     // Containers API
                     .route("/v1/containers/getState", web::get().guard(guard::Get()).to(handlers::get_containers_state))
                     .route("/v1/containers/getState/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_state_query))
-                    .route("/v1/containers/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_single_state_container_query))
+                    .route("/v1/containers/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_single_state_query))
+                    .route("/v1/containers/getShortList/{id}", web::get().guard(guard::Get()).to(handlers::get_containers_short_list))
                     .route("/v1/containers/postContainerCreate", web::post().guard(guard::Post()).to(handlers::post_containers_create))
                     .route("/v1/containers/postSetState", web::post().guard(guard::Post()).to(handlers::post_containers_setstate))
                     .route("/v1/containers/deleteContainer", web::delete().guard(guard::Delete()).to(handlers::delete_containers_data))
@@ -210,7 +213,8 @@ async fn https_server() -> std::io::Result<()> {
                     // Pods API
                     .route("/v1/pods/getState", web::get().guard(guard::Get()).to(handlers::get_pods_status))
                     .route("/v1/pods/getState/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_status_query))
-                    .route("/v1/pods/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_single_state_pod_query))
+                    .route("/v1/pods/getStateSingle/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_single_state_query))
+                    .route("/v1/pods/getShortList/{id}", web::get().guard(guard::Get()).to(handlers::get_pods_short_list))
                     .route("/v1/pods/postPodCreate", web::post().guard(guard::Post()).to(handlers::post_pods_create))
                     .route("/v1/pods/postSetState", web::post().guard(guard::Post()).to(handlers::post_pods_setstate))
                     .route("/v1/pods/deletePod", web::delete().guard(guard::Delete()).to(handlers::delete_pods_data))
