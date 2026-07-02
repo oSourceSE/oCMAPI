@@ -112,6 +112,8 @@ Endpoints:
 >
 > /v1/containers/getStateSingle/\<id\>
 >
+> /v1/containers/getShortList
+>
 > /v1/containers/postContainerCreate
 >
 > /v1/containers/postSetState
@@ -130,6 +132,8 @@ Endpoints:
 > /v1/pods/getState/\<id\>
 >
 > /v1/pods/getStateSingle/\<id\>
+>
+> /v1/pods/getShortList
 > 
 > /v1/pods/postPodCreate
 >
