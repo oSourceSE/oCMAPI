@@ -1639,7 +1639,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
 
 // Get new container image.
 pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
-// Get JSON data from post.
+    // Get JSON data from post.
     let jdata= sdata.into_inner();
 
     // Regex for non allowed characters.
@@ -1853,7 +1853,7 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
 
 // Post Repository login.
 pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
-// Get JSON data from post.
+    // Get JSON data from post.
     let jdata= sdata.into_inner();
 
     // Regex for non allowed characters.
@@ -2014,7 +2014,8 @@ pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: H
 
 // Post Repository logout.
 pub async fn post_common_repository_logout(sdata: web::Json<RepoLogOut>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
-// Get JSON data from post.
+
+    // Get JSON data from post.
     let jdata= sdata.into_inner();
 
     // Regex for non allowed characters.
@@ -2895,12 +2896,12 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
     // Create arg_input variable.
     let arg_input;
     // Check param from input, must match.
-    match param.as_str() {
-        "created" => { arg_input = format!("status={}", param); },
-        "exited" => { arg_input = format!("status={}", param); },
-        "paused" => { arg_input = format!("status={}", param); },
-        "running" => { arg_input = format!("status={}", param); },
-        "unknown" => { arg_input = format!("status={}", param); },
+    match param.to_lowercase().as_str() {
+        "created" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "exited" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "paused" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "running" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "unknown" => { arg_input = format!("status={}", param.to_lowercase()); },
         _ => { arg_input = format!("status={}", "ERROR"); },
     }
 
@@ -3401,7 +3402,7 @@ pub async fn get_containers_short_list(param: web::Path<String>,reqdata: HttpReq
     let arg_input;
 
     // Check param from input, must match.
-    match param.as_str() {
+    match param.to_lowercase().as_str() {
         "name" => { arg_input = "Names" },
         "id" => { arg_input = "ID" },
         _ => { arg_input = "ERROR" },
@@ -3911,7 +3912,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
     };
 
     // Check state from input, must match given or get ERROR as result.
-    let arg_input: String = match jdata.state.as_str() {
+    let arg_input: String = match jdata.state.to_lowercase().as_str() {
         "start" => { jdata.state.to_string() },
         "stop" => { jdata.state.to_string() },
         "pause" => { jdata.state.to_string() },
@@ -3966,7 +3967,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
     // The command.
     let cmd = Command::new("podman")
         .arg("container")
-        .arg(arg_input.clone())
+        .arg(arg_input.to_lowercase().clone())
         .arg(jdata.name.clone())
         .output();
 
@@ -3987,7 +3988,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 let data = json!(
                     {
                         "Code": 200,
-                        "Info": format!("Container '{}' has been set to '{}' state",result,jdata.state),
+                        "Info": format!("Container '{}' has been set to '{}' state",result,jdata.state.to_lowercase()),
                         "Status": "OK"
                     }
                 );
@@ -4029,9 +4030,9 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 let data = json!(
                     [
                         {
-                            "Code": 404,
-                            "Info": format!("No container handled based on given input state: {}",arg_input),
-                            "State": "None"
+                            "Code": 400,
+                            "Info": format!("{}",String::from_utf8_lossy(&cmd_ok.stderr).replace("\n", "").replace("\t", "")),
+                            "State": "Bad 'Request"
                         }
                     ]
                 );
@@ -4053,7 +4054,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 ];
 
                 // Get log function and put requierd data into it.
-                let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"POST",vlogdata);
+                let vlog: Vec<String> = logs::log_data(400,"Bad 'Request",0,"POST",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
@@ -4062,7 +4063,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::NotFound()
+                Ok( HttpResponse::BadRequest()
                     .append_header(("api-version",vheaders[0].clone()))
                     .content_type(vheaders[1].clone())
                     .json(data) )
@@ -4112,7 +4113,7 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
     }
 }
 
-// Delete container.
+// Delete contain.to_lowercase()er.
 pub async fn delete_containers_data(sdata: web::Json<DeleteContainer>, reqdata: HttpRequest) -> io::Result<HttpResponse> {
     // Get JSON data from post.
     let jdata = sdata.into_inner();
@@ -4742,12 +4743,12 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
     let arg_input;
 
     // Check param from input, must match.
-    match param.as_str() {
-        "created" => { arg_input = format!("status={}", param); },
-        "exited" => { arg_input = format!("status={}", param); },
-        "paused" => { arg_input = format!("status={}", param); },
-        "running" => { arg_input = format!("status={}", param); },
-        "unknown" => { arg_input = format!("status={}", param); },
+    match param.to_lowercase().as_str() {
+        "created" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "exited" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "paused" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "running" => { arg_input = format!("status={}", param.to_lowercase()); },
+        "unknown" => { arg_input = format!("status={}", param.to_lowercase()); },
         _ => { arg_input = format!("status={}", "ERROR"); },
     }
 
@@ -5250,7 +5251,7 @@ pub async fn get_pods_short_list(param: web::Path<String>,reqdata: HttpRequest) 
     let mut arg_input;
 
     // Check param from input, must match.
-    match param.as_str() {
+    match param.to_lowercase().as_str() {
         "name" => { arg_input = "Name" },
         "id" => { arg_input = "ID" },
         _ => { arg_input = "ERROR" },
@@ -5686,7 +5687,7 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
     };
 
     // Check state from input, must match given or get ERROR as result.
-    let arg_input: String = match jdata.state.as_str() {
+    let arg_input: String = match jdata.state.to_lowercase().as_str() {
         "start" => { jdata.state.to_string() },
         "stop" => { jdata.state.to_string() },
         "pause" => { jdata.state.to_string() },
@@ -5741,7 +5742,7 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
     // The command.
     let cmd = Command::new("podman")
         .arg("pod")
-        .arg(arg_input.clone())
+        .arg(arg_input.to_lowercase().clone())
         .arg(jdata.name.clone())
         .output();
 
@@ -5762,7 +5763,7 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                 let data = json!(
                     {
                         "Code": 200,
-                        "Info": format!("Sucessfully set Pod '{}' state to '{}'",result,jdata.state),
+                        "Info": format!("Sucessfully set Pod '{}' state to '{}'",result,jdata.state.to_lowercase()),
                         "Status": "OK" 
                     }
                 );
@@ -5803,9 +5804,9 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                 // Construct JSON object
                 let data = json!(
                     {
-                        "Code": 404,
-                        "Info": format!("No pod handled based on given input state: {}",arg_input),
-                        "Status": "Not Found"
+                        "Code": 400,
+                        "Info": format!("{}",String::from_utf8_lossy(&cmd_ok.stderr).replace("\n", "").replace("\t", "")),
+                        "Status": "Bad Request"
                     }
                 );
 
@@ -5835,7 +5836,7 @@ pub async fn post_pods_setstate(sdata: web::Json<StatePod>,reqdata: HttpRequest)
                 let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::NotFound()
+                Ok( HttpResponse::BadRequest()
                     .append_header(("api-version",vheaders[0].clone()))
                     .content_type(vheaders[1].clone())
                     .json(data) )
@@ -5998,8 +5999,7 @@ pub async fn delete_pods_data(sdata: web::Json<DeletePod>,reqdata: HttpRequest) 
             .arg("pod")
             .arg("rm")
             .arg(jdata.name.clone())
-            .output()
-            .expect("Return code 0...");
+            .output()?;
 
             // Check result.
             match cmd_remove.status.code() {
@@ -6874,11 +6874,10 @@ pub async fn delete_networks_data(sdata: web::Json<DeleteNetwork>, reqdata: Http
             .arg("network")
             .arg("rm")
             .arg(jdata.name.clone())
-            .status()
-            .expect("Ok exit code...");
+            .output()?;
 
             // Check result.
-            match cmd_remove.code() {
+            match cmd_remove.status.code() {
             Some(0) => {
                 // Construct JSON object.
                 let data = json!(

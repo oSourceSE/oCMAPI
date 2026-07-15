@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.1.1
+  version: 1.1.2
   license: 
     name: BSD License
     url: https://www.osource.se/license.html
@@ -3980,35 +3980,6 @@ paths:
                   type: string
                 Status:
                   type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
         '500':
           description: Internal Server Error
           content:
@@ -5479,35 +5450,6 @@ paths:
                   type: string
         '400':
           description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
           content:
             application/json:
               schema:
