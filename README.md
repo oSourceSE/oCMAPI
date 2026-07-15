@@ -166,6 +166,8 @@ Options:
   -v, --version     show version for oCMAPI.
   --help, help      display usage information
 ```
+## Examples
+In the `examples` folder there are `Ansible` examples for each endpoint in the API.
 
 ## TODO
 
