@@ -1,0 +1,38 @@
+# Example playbook for getting data from getEnvFiles API.
+#
+# Set the following parameters SERVER, USER & PWD either
+# via external parameters or replace them here directly.
+#
+# Revision: 1 Updated: 2026-07-05
+#
+- name: "Example playbook for getting env files listing fom the API"
+  gather_facts: false
+  hosts: localhost
+  vars:
+    # The server address to the API
+    api_server: "{{ SERVER }}"
+    # Path to the API.
+    api_path: "/v1/common/getEnvFiles"
+    # User for authentication.
+    api_user: "{{ USER }}"
+    # Password for the authentication.
+    api_pwd: "{{ PWD }}"
+
+  tasks:
+    # Get information from API.
+    - name: "Get information from API"
+      delegate_to: localhost
+      ansible.builtin.uri:
+        url: "{{ api_server }}{{ api_path }}"
+        method: GET
+        headers:
+          Accept: application/json
+        force_basic_auth: true
+        user: "{{ api_user }}"
+        password: "{{ api_pwd }}"
+      register: api_response
+
+    # Show response from API.
+    - name: "Show response from API"
+      ansible.builtin.debug:
+        msg: "{{ api_response.json }}"

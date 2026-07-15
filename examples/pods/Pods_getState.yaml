@@ -1,0 +1,48 @@
+# Example playbook for getting data from getState API.
+#
+# Set the following parameters SERVER, USER, PWD either
+# via external parameters or replace them here directly.
+#
+# The STATE parameter is dynamic and should be set at start,
+# can be optional and if empty will get all containers and their states.
+#
+# Revision: 1 Updated: 2026-07-07
+#
+- name: "Example playbook for getting data from getState API"
+  gather_facts: false
+  hosts: localhost
+  vars:
+    # The server address to the API
+    api_server: "{{ SERVER }}"
+    # Path to the API.
+    api_path: "/v1/pods/getState"
+    # User for authentication.
+    api_user: "{{ USER }}"
+    # Password for the authentication.
+    api_pwd: "{{ PWD }}"
+    # Search parameter.
+    search_data: "{{ STATE | default('') }}"
+
+  tasks:
+    # Set API path based on input.
+    - name: "Set API path based on input"
+      ansible.builtin.set_fact:
+        api_full_path: "/v1/pods/getState/{{ search_data }}"
+
+    # Get information from API.
+    - name: "Get information from API"
+      delegate_to: localhost
+      ansible.builtin.uri:
+        url: "{{ api_server }}{{ api_full_path }}"
+        method: GET
+        headers:
+          Accept: application/json
+        force_basic_auth: true
+        user: "{{ api_user }}"
+        password: "{{ api_pwd }}"
+      register: api_response
+
+    # Show response from API.
+    - name: "Show response from API"
+      ansible.builtin.debug:
+        msg: "{{ api_response.json }}"

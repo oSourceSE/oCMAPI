@@ -1,0 +1,48 @@
+# Example playbook for getting data from getShortList API.
+#
+# Set the following parameters SERVER, USER, PWD either
+# via external parameters or replace them here directly.
+#
+# The TYPE parameter is dynamic and should be set at each start,
+# it is required for this to work.
+#
+# Revision: 1 Updated: 2026-07-07
+#
+- name: "Example playbook for getting data from getShortList API"
+  gather_facts: false
+  hosts: localhost
+  vars:
+    # The server address to the API
+    api_server: "{{ SERVER }}"
+    # Path to the API.
+    api_path: "/v1/containers/getShortList"
+    # User for authentication.
+    api_user: "{{ USER }}"
+    # Password for the authentication.
+    api_pwd: "{{ PWD }}"
+    # Type to search for name or id.
+    search_type: "{{ TYPE }}"
+
+  tasks:
+    # Set API path based on input.
+    - name: "Set API path based on input"
+      ansible.builtin.set_fact:
+        api_search: "/{{ search_type }}"
+
+    # Get information from API.
+    - name: "Get information from API"
+      delegate_to: localhost
+      ansible.builtin.uri:
+        url: "{{ api_server }}{{ api_path }}{{ api_search }}"
+        method: GET
+        headers:
+          Accept: application/json
+        force_basic_auth: true
+        user: "{{ api_user }}"
+        password: "{{ api_pwd }}"
+      register: api_response
+
+    # Show response from API.
+    - name: "Show response from API"
+      ansible.builtin.debug:
+        msg: "{{ api_response.json }}"

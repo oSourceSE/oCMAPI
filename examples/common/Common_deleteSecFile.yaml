@@ -1,0 +1,49 @@
+# Example playbook for Posting to the deleteSecFile API.
+#
+# Set the following parameters SERVER, USER, PWD  & BODY either
+# via external parameters or replace them here directly.
+#
+# Example JSON body to input.
+# {
+#   "name": "sec_filename",
+#   "key": "secret_key"
+# }
+#
+# Revision: 1 Updated: 2026-07-07
+#
+- name: "Example playbook for Posting to the deleteSecFile API"
+  gather_facts: false
+  hosts: localhost
+  vars:
+    # The server address to the API
+    api_server: "{{ SERVER }}"
+    # Path to the API.
+    api_path: "/v1/common/deleteSecFile"
+    # User for authentication.
+    api_user: "{{ USER }}"
+    # Password for the authentication.
+    api_pwd: "{{ PWD }}"
+    # Body to send.
+    json_body: "{{ BODY }}"
+
+  tasks:
+    # Post information to the API.
+    - name: "Post information to the API"
+      delegate_to: localhost
+      ansible.builtin.uri:
+        url: "{{ api_server }}{{ api_path }}"
+        method: DELETE
+        status_code: 200
+        headers:
+          Accept: application/json
+        force_basic_auth: true
+        user: "{{ api_user }}"
+        password: "{{ api_pwd }}"
+        body_format: json
+        body: "{{ json_body }}"
+      register: api_response
+
+    # Show response from API.
+    - name: "Show response from API"
+      ansible.builtin.debug:
+        msg: "{{ api_response.json }}"
