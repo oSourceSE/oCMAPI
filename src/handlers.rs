@@ -869,7 +869,7 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
 
     // Regex for non allowed characters.
     let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
-    
+
     // Check if regex matches anything in name.
     if rx_name.find(jdata.name.as_str()).is_some() {
         // Construct JSON object
@@ -1206,7 +1206,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
     if file_exist {
         full_path = format!("{}/{}_{}.tmp", SEC_PATH.get().unwrap(), jdata.name, rand_number());
     }
-    
+
     // Create empty vec for cmd args.
     let mut argdata: Vec<String> = Vec::new();
 
@@ -1646,7 +1646,7 @@ pub async fn post_common_container_image(sdata: web::Json<GetImage>,reqdata: Htt
     let rx_repository = Regex::new(r"([^A-Za-z0-9.\/_-])").unwrap();
     let rx_image = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
     let rx_version = Regex::new(r"([^A-Za-z0-9._-])").unwrap();
-    
+
     // Check if regex matches anything in name.
     if rx_repository.find(jdata.repository.as_str()).is_some() || rx_image.find(jdata.image.as_str()).is_some() || rx_version.find(jdata.version.as_str()).is_some() {
         // Construct JSON object
@@ -1860,7 +1860,7 @@ pub async fn post_common_repository_login(sdata: web::Json<RepoLogin>,reqdata: H
     let rx_repository = Regex::new(r"([^A-Za-z0-9.\/_-])").unwrap();
     let rx_username = Regex::new(r"([^A-Za-z0-9._-])").unwrap();
     let rx_password = Regex::new(r#"([""'/\`´\\=])"#).unwrap();
-    
+
     // Check if regex matches anything in name.
     if jdata.username.is_empty() || jdata.password.is_empty() || jdata.repository.is_empty() || rx_repository.find(&&jdata.repository.as_str()).is_some() || rx_username.find(&jdata.username.as_str()).is_some() || rx_password.find(jdata.password.as_str()).is_some() {
         // Construct JSON object
@@ -2020,7 +2020,7 @@ pub async fn post_common_repository_logout(sdata: web::Json<RepoLogOut>,reqdata:
 
     // Regex for non allowed characters.
     let rx_repository = Regex::new(r"([^A-Za-z0-9.\/_-])").unwrap();
-    
+
     // Check if regex matches anything in name.
     if jdata.repository.is_empty() || rx_repository.find(&&jdata.repository.as_str()).is_some() {
         // Construct JSON object
@@ -2177,7 +2177,7 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
 
     // Regex for non allowed characters.
     let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
-    
+
     // Check if regex matches anything in name.
     if rx_name.find(jdata.name.as_str()).is_some() {
         // Construct JSON object
@@ -2328,13 +2328,13 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
                         "Status": "Bad Request"
                     }
                 );
-            
+
                 // Get USER-AGENT from request header, ugly but works.
                 let mut ua_string = String::new();
                 for v in reqdata.headers().get_all(USER_AGENT) {
                     ua_string = format!("{:?}",v);
                 };
-            
+
                 // Vec for HttpRequest data to log.
                 // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
                 let vlogdata = vec![
@@ -2344,16 +2344,16 @@ pub async fn delete_common_envfile(sdata: web::Json<DeleteEnvFile>, reqdata: Htt
                     reqdata.connection_info().host().to_string(),
                     ua_string
                 ];
-            
+
                 // Get log function and put requierd data into it.
                 let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
-            
+
                 // Fetch headers.
                 let vheaders = api_headers();
-            
+
                 // Return answer.
                 return Ok( HttpResponse::BadRequest()
                     .append_header(("api-version",vheaders[0].clone()))
@@ -2563,13 +2563,13 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
                         "Status": "Bad Request"
                     }
                 );
-            
+
                 // Get USER-AGENT from request header, ugly but works.
                 let mut ua_string = String::new();
                 for v in reqdata.headers().get_all(USER_AGENT) {
                     ua_string = format!("{:?}",v);
                 };
-            
+
                 // Vec for HttpRequest data to log.
                 // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
                 let vlogdata = vec![
@@ -2579,16 +2579,16 @@ pub async fn delete_common_secfile(sdata: web::Json<DeleteSecFile>, reqdata: Htt
                     reqdata.connection_info().host().to_string(),
                     ua_string
                 ];
-            
+
                 // Get log function and put requierd data into it.
                 let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"DELETE",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
-            
+
                 // Fetch headers.
                 let vheaders = api_headers();
-            
+
                 // Return answer.
                 return Ok( HttpResponse::BadRequest()
                     .append_header(("api-version",vheaders[0].clone()))
@@ -2915,7 +2915,7 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
                 "Status": "Bad Request"
             }
         );
-        
+
         // Get USER-AGENT from request header, ugly but works.
         let mut ua_string = String::new();
         for v in reqdata.headers().get_all(USER_AGENT) {
@@ -2970,7 +2970,7 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
             let count = cmd_ok.stdout.len();
             if count > 4 {
                 // Clean data from unneeded characters.
-                let data = format!("[{}]", String::from_utf8_lossy(&cmd_ok.stdout))
+                let data = format!("[{}{{\"ListEmpty\": false}}]", String::from_utf8_lossy(&cmd_ok.stdout))
                     .trim_start()
                     .trim_end()
                     .to_string()
@@ -3006,15 +3006,18 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
                     .content_type(vheaders[1].clone())
                     .body(data) )
             }
-            // Return error since no containers are running.
+            // Return OK even if list is empty but set ListEmpty key to true.
             else {
                 // Construct JSON object
                 let data = json!(
                     [
                         {
-                            "Code": 404,
+                            "Code": 200,
                             "Info": format!("No containers matching query status: {}",arg_input.replace("status=", "")),
-                            "Status": "None"
+                            "Status": "OK"
+                        },
+                        {
+                            "ListEmpty": true
                         }
                     ]
                 );
@@ -3034,7 +3037,7 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
                     ua_string
                 ];
                 // Get log function and put requierd data into it.
-                let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
                 // Send information to log.
                 let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                 let _ = logs::send_logs(logdata);
@@ -3043,7 +3046,7 @@ pub async fn get_containers_state_query(param: web::Path<String>,reqdata: HttpRe
                 let vheaders = api_headers();
 
                 // Return answer.
-                Ok( HttpResponse::NotFound()
+                Ok( HttpResponse::Ok()
                     .append_header(("api-version",vheaders[0].clone()))
                     .content_type(vheaders[1].clone())
                     .json(data) )
@@ -3271,15 +3274,13 @@ pub async fn get_containers_single_state_query(param: web::Path<String>,reqdata:
 
                             // Construct JSON object
                             let data = json!(
-                                [
-                                    {
-                                        "Code": 404,
-                                        "Info": format!("No containers matching name or ID: {}",indata),
-                                        "Status": "Not Found"
-                                    }
-                                ]
+                                {
+                                    "Code": 404,
+                                    "Info": format!("No containers matching name or ID: {}",indata),
+                                    "Status": "Not Found"
+                                }
                             );
-                        
+
                             // Get USER-AGENT from request header, ugly but works.
                             let mut ua_string = String::new();
                             for v in reqdata.headers().get_all(USER_AGENT) {
@@ -3299,10 +3300,10 @@ pub async fn get_containers_single_state_query(param: web::Path<String>,reqdata:
                             // Send information to log.
                             let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                             let _ = logs::send_logs(logdata);
-                        
+
                             // Fetch headers.
                             let vheaders = api_headers();
-                        
+
                             // Return answer.
                             return Ok( HttpResponse::NotFound()
                                 .append_header(("api-version",vheaders[0].clone()))
@@ -3319,7 +3320,7 @@ pub async fn get_containers_single_state_query(param: web::Path<String>,reqdata:
                                 "Status": "Internal Server Error"
                             }
                         );
-                    
+
                         // Get USER-AGENT from request header, ugly but works.
                         let mut ua_string = String::new();
                         for v in reqdata.headers().get_all(USER_AGENT) {
@@ -3334,16 +3335,15 @@ pub async fn get_containers_single_state_query(param: web::Path<String>,reqdata:
                             reqdata.connection_info().host().to_string(),
                             ua_string
                         ];
-                    
                         // Get log function and put requierd data into it.
                         let vlog: Vec<String> = logs::log_data(500,"Internal Server Error",6,"GET",vlogdata);
                         // Send information to log.
                         let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                         let _ = logs::send_logs(logdata);
-                    
+
                         // Fetch headers.
                         let vheaders = api_headers();
-                    
+
                         // Return answer.
                         return Ok( HttpResponse::InternalServerError()
                             .append_header(("api-version",vheaders[0].clone()))
@@ -4028,13 +4028,11 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
             else {
                 // Construct JSON object
                 let data = json!(
-                    [
-                        {
-                            "Code": 400,
-                            "Info": format!("{}",String::from_utf8_lossy(&cmd_ok.stderr).replace("\n", "").replace("\t", "")),
-                            "State": "Bad 'Request"
-                        }
-                    ]
+                    {
+                        "Code": 400,
+                        "Info": format!("{}",String::from_utf8_lossy(&cmd_ok.stderr).replace("\n", "").replace("\t", "")),
+                        "State": "Bad 'Request"
+                    }
                 );
 
                 // Get USER-AGENT from request header, ugly but works.
@@ -4513,7 +4511,7 @@ pub async fn delete_containers_volume_data(sdata: web::Json<DeleteVolume>, reqda
             .arg(jdata.name.clone())
             .output()
             .expect("Exit code 0...");
-        
+
         // Check exit code.
         match cmd.status.code() {
             Some(0) => {
@@ -4815,7 +4813,7 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                 let count = cmd_ok.stdout.len();
                 if count > 4 {
                     // Clean data from unneeded characters.
-                    let data = format!("[{}]", String::from_utf8_lossy(&cmd_ok.stdout))
+                    let data = format!("[{}{{\"ListEmpty\": false}}]", String::from_utf8_lossy(&cmd_ok.stdout))
                         .trim_start()
                         .trim_end()
                         .to_string()
@@ -4853,14 +4851,17 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                         .content_type(vheaders[1].clone())
                         .body(data) )
                 }
-                // Return error since no containers are running.
+                // Return OK even if list is empty but set ListEmpty key to true.
                 else {
                     let data = json!(
                         [
                             {
-                                "Code": 404,
+                                "Code": 200,
                                 "Info": format!("No pods matching query status: {}",arg_input.replace("status=", "")),
-                                "Status": "None"
+                                "Status": "Request OK",
+                            },
+                            {
+                                "ListEmpty": true
                             }
                         ]
                     );
@@ -4882,7 +4883,7 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                     ];
 
                     // Get log function and put requierd data into it.
-                    let vlog: Vec<String> = logs::log_data(404,"Not Found",0,"GET",vlogdata);
+                    let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"GET",vlogdata);
                     // Send information to log.
                     let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
                     let _ = logs::send_logs(logdata);
@@ -4891,7 +4892,7 @@ pub async fn get_pods_status_query(param: web::Path<String>,reqdata: HttpRequest
                     let vheaders = api_headers();
 
                     // Return answer.
-                    Ok( HttpResponse::NotFound()
+                    Ok( HttpResponse::Ok()
                         .append_header(("api-version",vheaders[0].clone()))
                         .content_type(vheaders[1].clone())
                         .json(data) )
@@ -5116,13 +5117,11 @@ pub async fn get_pods_single_state_query(param: web::Path<String>,reqdata: HttpR
 
                             // Construct JSON object
                             let data = json!(
-                                [
-                                    {
-                                        "Code": 404,
-                                        "Info": format!("No containers matching name or ID: {}",indata),
-                                        "Status": "Not Found"
-                                    }
-                                ]
+                                {
+                                    "Code": 404,
+                                    "Info": format!("No containers matching name or ID: {}",indata),
+                                    "Status": "Not Found"
+                                }
                             );
 
                             // Get USER-AGENT from request header, ugly but works.

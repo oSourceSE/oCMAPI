@@ -1,11 +1,198 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.1.2
+  version: 1.1.3
   license: 
     name: BSD License
     url: https://www.osource.se/license.html
 paths:
+  /v1/common/getEnvFiles:
+    get:
+      summary: getEnvFiles
+      operationId: common_getenvfiles
+      description: Endpoint for listing `ENV` files residing on the server.
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Files:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  State:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Files:
+                  type: string
+                Info:
+                  type: string
+                State:
+                  type: integer
+                Status:
+                  type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getenvfiles: []
+  /v1/common/getImageList:
+    get:
+      summary: getImageList
+      operationId: common_getimagelist
+      description: Get basic information about all images that exists on the server.
+      tags:
+        - Common
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                      properties:
+                        type: object
+                        properties:
+                          Names:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    type: string
+                          ImageSize:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                          Created:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+              example:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: array
+                      items:
+                        type: string
+                    ImageSize:
+                      type: integer
+                    Created:
+                      type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getimagelist: []
   /v1/common/getInfo:
     get:
       summary: getInfo
@@ -1194,16 +1381,61 @@ paths:
           example: application/json
       security:
         - getversion: []
-  /v1/common/getEnvFiles:
-    get:
-      summary: getEnvFiles
-      operationId: common_getenvfiles
-      description: Endpoint for listing `ENV` files residing on the server.
+  /v1/common/postEnvFileCreate:
+    post:
+      summary: postEnvFileCreate
+      operationId: common_postenvfilecreate
+      description: >-
+        Create or replace an `env` file with parameters used in containers, good
+        for moving variables like `usernames`, `passwords` and so on from the
+        create command when creating a container.
+
+
+        The file will automatically get the `.env` added at the end, so the
+        `name` tag should only contain the name you want to give it.
+
+
+        the `content` data must be separated with a `|` in order for the API to
+        successfully split the data into correct format, there are no need to
+        add an `|` after final variable.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "filename",
+          "content": "USER=user|PASS=password",
+          "replace": "no"
+        }
+
+         ```
+
+        You can overwrite an existing file by setting the `replace` tag to yes,
+        otherwise it will not do anything if the file already exists. The
+        `replace` tag can only consist of the words `yes` or `no`, if you put
+        something else here it will halt and error out.
+
+
+        Example:
+
+
+        ``` json
+
+        {
+          "name": "filename",
+          "content": "USER=user|PASS=password",
+          "replace": "yes"
+        }
+
+         ```
       tags:
         - Common
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
           content:
             application/json:
               schema:
@@ -1214,17 +1446,12 @@ paths:
                     properties:
                       type:
                         type: string
-                  Files:
-                    type: object
-                    properties:
-                      type:
-                        type: string
                   Info:
                     type: object
                     properties:
                       type:
                         type: string
-                  State:
+                  File:
                     type: object
                     properties:
                       type:
@@ -1237,12 +1464,10 @@ paths:
               example:
                 Code:
                   type: integer
-                Files:
-                  type: string
                 Info:
                   type: string
-                State:
-                  type: integer
+                File:
+                  type: string
                 Status:
                   type: string
         '400':
@@ -1275,6 +1500,13 @@ paths:
                 Status:
                   type: string
       parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
         - name: Accept
           in: header
           description: ''
@@ -1282,105 +1514,10 @@ paths:
           schema:
             type: string
           example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postenvfilecreate'
       security:
-        - getenvfiles: []
-  /v1/common/getImageList:
-    get:
-      summary: getImageList
-      operationId: common_getimagelist
-      description: Get basic information about all images that exists on the server.
-      tags:
-        - Common
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  type:
-                    type: string
-                  items:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                      properties:
-                        type: object
-                        properties:
-                          Names:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-                              items:
-                                type: object
-                                properties:
-                                  type:
-                                    type: string
-                          ImageSize:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-                          Created:
-                            type: object
-                            properties:
-                              type:
-                                type: string
-              example:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: array
-                      items:
-                        type: string
-                    ImageSize:
-                      type: integer
-                    Created:
-                      type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getimagelist: []
+        - postenvfilecreate: []
   /v1/common/postGetRepoImage:
     post:
       summary: postGetRepoImage
@@ -2163,143 +2300,6 @@ paths:
         $ref: '#/components/requestBodies/postsecretcreate'
       security:
         - postsecretcreate: []
-  /v1/common/postEnvFileCreate:
-    post:
-      summary: postEnvFileCreate
-      operationId: common_postenvfilecreate
-      description: >-
-        Create or replace an `env` file with parameters used in containers, good
-        for moving variables like `usernames`, `passwords` and so on from the
-        create command when creating a container.
-
-
-        The file will automatically get the `.env` added at the end, so the
-        `name` tag should only contain the name you want to give it.
-
-
-        the `content` data must be separated with a `|` in order for the API to
-        successfully split the data into correct format, there are no need to
-        add an `|` after final variable.
-
-
-        Example:
-
-
-        ``` json
-
-        {
-          "name": "filename",
-          "content": "USER=user|PASS=password",
-          "replace": "no"
-        }
-
-         ```
-
-        You can overwrite an existing file by setting the `replace` tag to yes,
-        otherwise it will not do anything if the file already exists. The
-        `replace` tag can only consist of the words `yes` or `no`, if you put
-        something else here it will halt and error out.
-
-
-        Example:
-
-
-        ``` json
-
-        {
-          "name": "filename",
-          "content": "USER=user|PASS=password",
-          "replace": "yes"
-        }
-
-         ```
-      tags:
-        - Common
-      responses:
-        '201':
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  File:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                File:
-                  type: string
-                Status:
-                  type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Content-Type
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      requestBody:
-        $ref: '#/components/requestBodies/postenvfilecreate'
-      security:
-        - postenvfilecreate: []
   /v1/common/deleteEnvFile:
     delete:
       summary: deleteEnvFile
@@ -2635,7 +2635,7 @@ paths:
   /v1/containers/getShortList/<type>:
     get:
       summary: getShortList/<type>
-      operationId: containers_getshortlist
+      operationId: containers_getshortlist--type-
       description: >-
         Get a complete list of `containers` either by `name` or `ID` for further
         processing.
@@ -2742,806 +2742,6 @@ paths:
           example: application/json
       security:
         - getshortlist_type: []
-  /v1/containers/getState/created:
-    get:
-      summary: getState/created
-      operationId: containers_getstate-created
-      description: Get all containers with the state `created` if exists.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_created: []
-  /v1/containers/getState/exited:
-    get:
-      summary: getState/exited
-      operationId: containers_getstate-exited
-      description: Get all containers with the state `exited` if exists.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_exited: []
-  /v1/containers/getState/paused:
-    get:
-      summary: getState/paused
-      operationId: containers_getstate-paused
-      description: Get all containers with the state `paused` if exists.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_paused: []
-  /v1/containers/getState/running:
-    get:
-      summary: getState/running
-      operationId: containers_getstate-running
-      description: Get all containers with the state `running` if exists.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_running: []
-  /v1/containers/getState/unknown:
-    get:
-      summary: getState/unknown
-      operationId: containers_getstate-unknown
-      description: Get all containers with the state `unknown` if exists.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_unknown: []
   /v1/containers/getState:
     get:
       summary: getState
@@ -3646,10 +2846,735 @@ paths:
           example: application/json
       security:
         - getstate: []
+  /v1/containers/getState/created:
+    get:
+      summary: getState/created
+      operationId: containers_getstate-created
+      description: >-
+        Get all containers with the state `created` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_created: []
+  /v1/containers/getState/exited:
+    get:
+      summary: getState/exited
+      operationId: containers_getstate-exited
+      description: >-
+        Get all containers with the state `exited` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_exited: []
+  /v1/containers/getState/paused:
+    get:
+      summary: getState/paused
+      operationId: containers_getstate-paused
+      description: >-
+        Get all containers with the state `paused` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_paused: []
+  /v1/containers/getState/running:
+    get:
+      summary: getState/running
+      operationId: containers_getstate-running
+      description: >-
+        Get all containers with the state `running` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_running: []
+  /v1/containers/getState/unknown:
+    get:
+      summary: getState/unknown
+      operationId: containers_getstate-unknown
+      description: >-
+        Get all containers with the state `unknown` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_unknown: []
   /v1/containers/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: containers_getstatesingle
+      operationId: containers_getstatesingle--id-
       description: >
         Get container status for a single container.
 
@@ -4249,7 +4174,7 @@ paths:
   /v1/pods/getShortList/<type>:
     get:
       summary: getShortList/<type>
-      operationId: pods_getshortlist
+      operationId: pods_getshortlist--type-
       description: >
         Get a complete list of `pods` either by `name` or `ID` for further
         processing.
@@ -4346,716 +4271,6 @@ paths:
           example: application/json
       security:
         - getshortlist_type_1: []
-  /v1/pods/getState/created:
-    get:
-      summary: getState/created
-      operationId: pods_getstate-created
-      description: Get all pods with the state `created` if exists.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_created_1: []
-  /v1/pods/getState/exited:
-    get:
-      summary: getState/exited
-      operationId: pods_getstate-exited
-      description: Get all pods with the state `exited` if exists.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_exited_1: []
-  /v1/pods/getState/paused:
-    get:
-      summary: getState/paused
-      operationId: pods_getstate-paused
-      description: Get all pods with the state `paused` if exists.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_paused_1: []
-  /v1/pods/getState/running:
-    get:
-      summary: getState/running
-      operationId: pods_getstate-running
-      description: Get all pods with the state `running` if exists.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_running_1: []
-  /v1/pods/getState/unknown:
-    get:
-      summary: getState/unknown
-      operationId: pods_getstate-unknown
-      description: Get all pods with the state `unknown` if exists.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_unknown_1: []
   /v1/pods/getState:
     get:
       summary: getState
@@ -5140,10 +4355,645 @@ paths:
           example: application/json
       security:
         - getstate_1: []
+  /v1/pods/getState/created:
+    get:
+      summary: getState/created
+      operationId: pods_getstate-created
+      description: >-
+        Get all pods with the state `created` if exists.
+
+
+        When no pods match the state it will still return a `200/OK`, there are
+        a `JSON` key called `listEmpty` that is either `true` or `false` in each
+        response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_created_1: []
+  /v1/pods/getState/exited:
+    get:
+      summary: getState/exited
+      operationId: pods_getstate-exited
+      description: >-
+        Get all pods with the state `exited` if exists.
+
+
+        When no pods match the state it will still return a `200/OK`, there are
+        a `JSON` key called `listEmpty` that is either `true` or `false` in each
+        response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_exited_1: []
+  /v1/pods/getState/paused:
+    get:
+      summary: getState/paused
+      operationId: pods_getstate-paused
+      description: >-
+        Get all pods with the state `paused` if exists.
+
+
+        When no pods match the state it will still return a `200/OK`, there are
+        a `JSON` key called `listEmpty` that is either `true` or `false` in each
+        response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_paused_1: []
+  /v1/pods/getState/running:
+    get:
+      summary: getState/running
+      operationId: pods_getstate-running
+      description: >-
+        Get all pods with the state `running` if exists.
+
+
+        When no pods match the state it will still return a `200/OK`, there are
+        a `JSON` key called `listEmpty` that is either `true` or `false` in each
+        response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_running_1: []
+  /v1/pods/getState/unknown:
+    get:
+      summary: getState/unknown
+      operationId: pods_getstate-unknown
+      description: >-
+        Get all pods with the state `unknown` if exists.
+
+
+        When no pods match the state it will still return a `200/OK`, there are
+        a `JSON` key called `listEmpty` that is either `true` or `false` in each
+        response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                        type: object
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_unknown_1: []
   /v1/pods/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: pods_getstatesingle
+      operationId: pods_getstatesingle--id-
       description: |-
         Get status for a single pod, whether it is running, exited and so on.
 
@@ -5726,7 +5576,7 @@ paths:
   /v1/networks/getInfoSingle/<id>:
     get:
       summary: getInfoSingle/<id>
-      operationId: networks_getinfosingle
+      operationId: networks_getinfosingle--id-
       description: >-
         Get information on a specific network.
 
@@ -6633,8 +6483,8 @@ components:
         state:
           type: string
       example:
-        name: pod_name
-        state: state_to_set
+        name: TestPod01
+        state: stop
   requestBodies:
     deleteenvfile:
       content:
