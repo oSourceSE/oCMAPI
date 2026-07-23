@@ -14,8 +14,6 @@ The `API` has been tested with `openapi-fuzzer` project to minimize issues with 
 
 The `API` contains information about all the routes when accessing it via browser and going to the root(`/`) path, the information is made with the help of `Redocly`.
 
-<img width="1145" height="278" alt="web" src="https://github.com/user-attachments/assets/fa65489d-21d6-4f1e-83a7-123b2a4dfb64"/>
-
 The `API` has been validated against `OpenAPI` version `3.0.0` and the `yaml` file is baked into the information presented on the first page in the web GUI.
 
 All requests and responses are `JSON` based for all `API` endpoints.
