@@ -968,7 +968,7 @@ pub async fn post_common_envfile(sdata: web::Json<CreateEnvFile>,reqdata: HttpRe
         let mut file = File::create(full_path.clone()).expect("Could not open file");
 
         // Write to file.
-        let content = format!("{}\n",jdata.content.to_string().replace("|", "\n").trim_end());
+        let content = format!("{}\n",jdata.content.to_string().replace("||", "\n").trim_end());
         file.write_all(content.as_bytes()).expect("ERROR");
 
         // Build answer.
@@ -1215,7 +1215,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
     argdata.push("create".to_string());
     if jdata.labels.trim().len() > 1 {
         // iterate through lables tag and split back to vec.
-        for v in jdata.labels.split(",").map(String::from) {
+        for v in jdata.labels.split("||").map(String::from) {
             argdata.push(format!("--label={}",v.trim()).to_string());
         }
     }
@@ -1241,7 +1241,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
             // Create file.
             let mut file = File::create(full_path.clone()).expect("Could not open file");
             // Write to file.
-            let content = format!("{}\n",jdata.data.to_string().replace("|", "\n").trim_end());
+            let content = format!("{}\n",jdata.data.to_string().replace("||", "\n").trim_end());
             file.write_all(content.as_bytes()).expect("ERROR");
 
             // Create command.
@@ -1401,7 +1401,7 @@ pub async fn post_common_secret(sdata: web::Json<CreateSecret>,reqdata: HttpRequ
                 // Create file.
                 let mut file = File::create(full_path.clone()).expect("Could not open file");
                 // Write to file.
-                let content = format!("{}\n",jdata.data.to_string().replace("|", "\n").trim_end());
+                let content = format!("{}\n",jdata.data.to_string().replace("||", "\n").trim_end());
                 file.write_all(content.as_bytes()).expect("ERROR");
 
                 // Secret exists, time to replace it.
@@ -3651,7 +3651,7 @@ pub async fn post_containers_create(cdata: web::Json<CreateContainer>,reqdata: H
         // Check that options are constructed right.
         if jdata.options.len() > 4 && jdata.options.starts_with("--") {
             // iterate through options tag and split back to vec.
-            for v in jdata.options.split(",-").map(String::from) {
+            for v in jdata.options.split("||").map(String::from) {
                 if v.starts_with("--") {
                     vecdata.push(v)
                 }
@@ -4108,6 +4108,144 @@ pub async fn post_containers_setstate(sdata: web::Json<StateContainer>,reqdata: 
                 .content_type(vheaders[1].clone())
                 .json(data) )
         }
+    }
+}
+
+// Post containers rename data.
+pub async fn post_containers_rename(sdata: web::Json<RenameContainer>,reqdata: HttpRequest) -> io::Result<HttpResponse> {
+    // Get JSON data from post.
+    let jdata = sdata.into_inner();
+
+    // Regex for non allowed characters in name.
+    let rx_name = Regex::new(r"([^A-Za-z0-9_-])").unwrap();
+
+    // Check if regex matches anything in name.
+    if rx_name.find(jdata.current.as_str()).is_some() || rx_name.find(jdata.new.as_str()).is_some() {
+        // Construct JSON object
+        let data = json!(
+            {
+                "Code": 400,
+                "Info": "Name(s) provided is not in correct format",
+                "Status": "Bad Request"
+            }
+        );
+
+        // Get USER-AGENT from request header, ugly but works.
+        let mut ua_string = String::new();
+        for v in reqdata.headers().get_all(USER_AGENT) {
+            ua_string = format!("{:?}",v);
+        };
+
+        // Vec for HttpRequest data to log.
+        // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+        let vlogdata = vec![
+            reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+            reqdata.connection_info().scheme().to_string(),
+            reqdata.path().to_string(),
+            reqdata.connection_info().host().to_string(),
+            ua_string
+        ];
+
+        // Get log function and put requierd data into it.
+        let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"POST",vlogdata);
+        // Send information to log.
+        let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+        let _ = logs::send_logs(logdata);
+
+        // Fetch headers.
+        let vheaders = api_headers();
+
+        // Return answer.
+        return Ok( HttpResponse::BadRequest()
+            .append_header(("api-version",vheaders[0].clone()))
+            .content_type(vheaders[1].clone())
+            .json(data) );
+    }
+
+    // The command.
+    let cmd = Command::new("podman")
+        .arg("container")
+        .arg("rename")
+        .arg(jdata.current.clone())
+        .arg(jdata.new.clone())
+        .output()
+        .expect("Exit code 0...");
+
+        // Check exit code.
+        match cmd.status.code() {
+            Some(0) => {
+                // Construct JSON object.
+                let data = json!(
+                    {
+                        "Code": 200,
+                        "Info": format!("Container '{}' has been renamed to '{}'",jdata.current,jdata.new),
+                        "Status": "OK"
+                    }
+                );
+                // Get USER-AGENT from request header, ugly but works.
+                let mut ua_string = String::new();
+                for v in reqdata.headers().get_all(USER_AGENT) {
+                    ua_string = format!("{:?}",v);
+                };
+                // Vec for HttpRequest data to log.
+                // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+                let vlogdata = vec![
+                    reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                    reqdata.connection_info().scheme().to_string(),
+                    reqdata.path().to_string(),
+                    reqdata.connection_info().host().to_string(),
+                    ua_string
+                ];
+                // Get log function and put requierd data into it.
+                let vlog: Vec<String> = logs::log_data(200,"Request OK",0,"POST",vlogdata);
+                // Send information to log.
+                let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+                let _ = logs::send_logs(logdata);
+                // Fetch headers.
+                let vheaders = api_headers();
+                // Return answer.
+                return Ok( HttpResponse::Ok()
+                    .append_header(("api-version",vheaders[0].clone()))
+                    .content_type(vheaders[1].clone())
+                    .json(data) );
+            },
+            _ => {
+            // Construct JSON object
+            let data = json!(
+                {
+                    "Code": 400,
+                    "Info": format!("Cannot rename container '{}', does it exist?",jdata.current),
+                    "Status": "Bad Request",
+                }
+            );
+            // Get USER-AGENT from request header, ugly but works.
+            let mut ua_string = String::new();
+            for v in reqdata.headers().get_all(USER_AGENT) {
+                ua_string = format!("{:?}",v);
+            };
+            // Vec for HttpRequest data to log.
+            // 0 = src, 1 = scheme, 2 = path, 3 = request, 4 = requestClientApplication
+            let vlogdata = vec![
+                reqdata.connection_info().peer_addr().unwrap_or("0.0.0.0").to_string(),
+                reqdata.connection_info().scheme().to_string(),
+                reqdata.path().to_string(),
+                reqdata.connection_info().host().to_string(),
+                ua_string
+            ];
+            // Get log function and put requierd data into it.
+            let vlog: Vec<String> = logs::log_data(400,"Bad Request",4,"GET",vlogdata);
+            // Send information to log.
+            let logdata = format!("{} src={} proto={} scheme={} dst={} dpt={} path={} requestMethod={} Request={} requestClientApplication={}",vlog[0],vlog[1],vlog[2],vlog[3],vlog[4],vlog[5],vlog[6],vlog[7],vlog[8],vlog[9]);
+            let _ = logs::send_logs(logdata);
+            // Fetch headers.
+            let vheaders = api_headers();
+            // Return answer.
+            return Ok( HttpResponse::BadRequest()
+                .append_header(("api-version",vheaders[0].clone()))
+                .content_type(vheaders[1].clone())
+                .json(data) );
+            }
+
     }
 }
 
@@ -5428,7 +5566,7 @@ pub async fn post_pods_create(cdata: web::Json<CreatePod>,reqdata: HttpRequest) 
         // Check if requirements are meet.
         if jdata.options.len() > 4 && jdata.options.starts_with("--") {
             // iterate through options tag and split back to vec.
-            for v in jdata.options.split(",-").map(String::from) {
+            for v in jdata.options.split("||").map(String::from) {
                 if v.starts_with("--") {
                     vecdata.push(v)
                 }
@@ -6430,7 +6568,7 @@ pub async fn post_networks_create(cdata: web::Json<CreateNetwork>,reqdata: HttpR
         // Check if requirements are meet.
         if jdata.options.len() > 4 && jdata.options.starts_with("--") {
             // iterate through options tag and split back to vec.
-            for v in jdata.options.split(",-").map(String::from) {
+            for v in jdata.options.split("||").map(String::from) {
                 if v.starts_with("--") {
                     vecdata.push(v);
                 }

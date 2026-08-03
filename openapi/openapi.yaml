@@ -1,15 +1,16 @@
 openapi: 3.0.0
 info:
   title: oCMAPI
-  version: 1.1.3
-  license: 
+  version: 1.1.4
+  license:
     name: BSD License
     url: https://www.osource.se/license.html
 paths:
   /v1/common/getEnvFiles:
     get:
       summary: getEnvFiles
-      operationId: common_getenvfiles
+      operationId: >-
+        common_getenvfiles
       description: Endpoint for listing `ENV` files residing on the server.
       tags:
         - Common
@@ -99,7 +100,8 @@ paths:
   /v1/common/getImageList:
     get:
       summary: getImageList
-      operationId: common_getimagelist
+      operationId: >-
+        common_getimagelist
       description: Get basic information about all images that exists on the server.
       tags:
         - Common
@@ -196,7 +198,8 @@ paths:
   /v1/common/getInfo:
     get:
       summary: getInfo
-      operationId: common_getinfo
+      operationId: >-
+        common_getinfo
       description: >-
         Get detailed information about your podman environment and all of its
         settings.
@@ -1044,11 +1047,12 @@ paths:
   /v1/common/getSecretFiles:
     get:
       summary: getSecretFiles
-      operationId: common_getsecretfiles
+      operationId: >-
+        common_getsecretfiles
       description: >-
         Endpoint for listing temporary `secrets` files, should always return 0
         if using the endpoint `postSecretCreate` since it will always remove the
-        temporary file used when creating the secret.
+        temporary file used when the secret has been created.
       tags:
         - Common
       responses:
@@ -1137,13 +1141,14 @@ paths:
   /v1/common/getStats:
     get:
       summary: getStats
-      operationId: common_getstats
+      operationId: >-
+        common_getstats
       description: >-
         Get current runtime statistics for all containers.
 
 
-        Shows information about CPU, Memory and so on for all that is running at
-        the time of the call.
+        Shows statistics about CPU, Memory, IO and so on for all containers that
+        is running at the time of the call.
       tags:
         - Common
       responses:
@@ -1269,7 +1274,8 @@ paths:
   /v1/common/getVersion:
     get:
       summary: getVersion
-      operationId: common_getversion
+      operationId: >-
+        common_getversion
       description: Get information about your current version of podman.
       tags:
         - Common
@@ -1384,7 +1390,8 @@ paths:
   /v1/common/postEnvFileCreate:
     post:
       summary: postEnvFileCreate
-      operationId: common_postenvfilecreate
+      operationId: >-
+        common_postenvfilecreate
       description: >-
         Create or replace an `env` file with parameters used in containers, good
         for moving variables like `usernames`, `passwords` and so on from the
@@ -1395,9 +1402,9 @@ paths:
         `name` tag should only contain the name you want to give it.
 
 
-        the `content` data must be separated with a `|` in order for the API to
+        the `content` data must be separated with `||` in order for the API to
         successfully split the data into correct format, there are no need to
-        add an `|` after final variable.
+        add `||` after the final variable.
 
 
         Example:
@@ -1407,7 +1414,7 @@ paths:
 
         {
           "name": "filename",
-          "content": "USER=user|PASS=password",
+          "content": "USER=user||PASS=password",
           "replace": "no"
         }
 
@@ -1426,7 +1433,7 @@ paths:
 
         {
           "name": "filename",
-          "content": "USER=user|PASS=password",
+          "content": "USER=user||PASS=password",
           "replace": "yes"
         }
 
@@ -1521,7 +1528,8 @@ paths:
   /v1/common/postGetRepoImage:
     post:
       summary: postGetRepoImage
-      operationId: common_postgetrepoimage
+      operationId: >-
+        common_postgetrepoimage
       description: >-
         Pull an image to the server without creating a container at the same
         time.
@@ -1633,7 +1641,8 @@ paths:
   /v1/common/postImageListSingle:
     post:
       summary: postImageListSingle
-      operationId: common_postimagelistsingle
+      operationId: >-
+        common_postimagelistsingle
       description: |-
         Get detailed information about a single image on the server.
 
@@ -1922,7 +1931,8 @@ paths:
   /v1/common/postRepoAuthLogin:
     post:
       summary: postRepoAuthLogin
-      operationId: common_postrepoauthlogin
+      operationId: >-
+        common_postrepoauthlogin
       description: >-
         When a repository require authentication before any image can be pulled.
 
@@ -2026,7 +2036,8 @@ paths:
   /v1/common/postRepoAuthLogout:
     post:
       summary: postRepoAuthLogout
-      operationId: common_postrepoauthlogout
+      operationId: >-
+        common_postrepoauthlogout
       description: >-
         When logout from a repository is needed use this endpoint.
 
@@ -2129,7 +2140,8 @@ paths:
   /v1/common/postSecretCreate:
     post:
       summary: postSecretCreate
-      operationId: common_postsecretcreate
+      operationId: >-
+        common_postsecretcreate
       description: >-
         Create or replace a `secret` with information used in containers, good
         for moving variables like `usernames`, `passwords` and so on from the
@@ -2139,7 +2151,7 @@ paths:
         During the creation or replacement of a `secret` a temporary file is
         placed under the folder assigned in the configuration file. This file
         will automatically get the `.tmp` added at the end and the file should
-        be removed automatically when operation is successful.
+        be gone automatically when operation is successful.
 
 
         the `data` tag is sent in as is into the secret so be sure to format it
@@ -2147,8 +2159,8 @@ paths:
 
 
         The `labels` tag is used for adding labels for the secret, they can be
-        viewed with the `inspect` command, each label is separated with a `,`
-        and is in the form of `LabelName=LabelValue`.
+        viewed with the `inspect` command, each label is separated with `||` and
+        is in the form of `LabelName=LabelValue`.
 
 
         Example:
@@ -2158,8 +2170,8 @@ paths:
 
         {
           "name": "secretname",
-          "content": "MySecretPassword",
-          "labels": "<label1>=<string>,<label2>=<string>",
+          "data": "MySecretPassword",
+          "labels": "<label1>=<string>||<label2>=<string>",
           "replace": "no"
         }
 
@@ -2178,8 +2190,8 @@ paths:
 
         {
           "name": "secretname",
-          "content": "MyNewSecretPassword",
-          "labels": "<label1>=<string>,<label2>=<string>",
+          "data": "MyNewSecretPassword",
+          "labels": "<label1>=<string>||<label2>=<string>",
           "replace": "yes"
         }
 
@@ -2303,7 +2315,8 @@ paths:
   /v1/common/deleteEnvFile:
     delete:
       summary: deleteEnvFile
-      operationId: common_deleteenvfile
+      operationId: >-
+        common_deleteenvfile
       description: >-
         Remove an `ENV` file from the server when it is not needed anymore.
 
@@ -2417,7 +2430,8 @@ paths:
   /v1/common/deleteImages:
     delete:
       summary: deleteImages
-      operationId: common_deleteimages
+      operationId: >-
+        common_deleteimages
       description: >-
         Prunes all unused `images` from the server when when they are no longer
         needed.
@@ -2520,7 +2534,8 @@ paths:
   /v1/common/deleteSecFile:
     delete:
       summary: deleteSecFile
-      operationId: common_deletesecfile
+      operationId: >-
+        common_deletesecfile
       description: >-
         Remove an `secrets` file from the server when it for some reason is not
         automatically removed when creating it via the `API`.
@@ -2635,7 +2650,8 @@ paths:
   /v1/containers/getShortList/<type>:
     get:
       summary: getShortList/<type>
-      operationId: containers_getshortlist--type-
+      operationId: >-
+        containers_getshortlist--type-
       description: >-
         Get a complete list of `containers` either by `name` or `ID` for further
         processing.
@@ -2742,10 +2758,756 @@ paths:
           example: application/json
       security:
         - getshortlist_type: []
+  /v1/containers/getState/created:
+    get:
+      summary: getState/created
+      operationId: >-
+        containers_getstate-created
+      description: >-
+        Get all containers with the state `created` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_created: []
+  /v1/containers/getState/exited:
+    get:
+      summary: getState/exited
+      operationId: >-
+        containers_getstate-exited
+      description: >-
+        Get all containers with the state `exited` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_exited: []
+  /v1/containers/getState/paused:
+    get:
+      summary: getState/paused
+      operationId: >-
+        containers_getstate-paused
+      description: >-
+        Get all containers with the state `paused` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_paused: []
+  /v1/containers/getState/running:
+    get:
+      summary: getState/running
+      operationId: >-
+        containers_getstate-running
+      description: >-
+        Get all containers with the state `running` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_running: []
+  /v1/containers/getState/unknown:
+    get:
+      summary: getState/unknown
+      operationId: >-
+        containers_getstate-unknown
+      description: >-
+        Get all containers with the state `unknown` if exists.
+
+
+        When no containers match the state it will still return a `200/OK`,
+        there are a `JSON` key called `listEmpty` that is either `true` or
+        `false` in each response for specified state.
+
+
+        The key `ListEmpty` is used for automations where you want to know if
+        any container is in the specified state.
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Names:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    State:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Exited:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ExitCode:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ListEmpty:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - Names:
+                    type: string
+                  State:
+                    type: string
+                  Status:
+                    type: string
+                  Exited:
+                    type: bool
+                  ExitCode:
+                    type: integer
+                - ListEmpty:
+                    type: bool
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_unknown: []
   /v1/containers/getState:
     get:
       summary: getState
-      operationId: containers_getstate
+      operationId: >-
+        containers_getstate
       description: >-
         Get container status for all containers, whether they are running,
         exited and so on.
@@ -2846,735 +3608,11 @@ paths:
           example: application/json
       security:
         - getstate: []
-  /v1/containers/getState/created:
-    get:
-      summary: getState/created
-      operationId: containers_getstate-created
-      description: >-
-        Get all containers with the state `created` if exists.
-
-
-        When no containers match the state it will still return a `200/OK`,
-        there are a `JSON` key called `listEmpty` that is either `true` or
-        `false` in each response for specified state.
-
-
-        The key `ListEmpty` is used for automations where you want to know if
-        any container is in the specified state.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ListEmpty:
-                        type: object
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - ListEmpty:
-                    type: bool
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_created: []
-  /v1/containers/getState/exited:
-    get:
-      summary: getState/exited
-      operationId: containers_getstate-exited
-      description: >-
-        Get all containers with the state `exited` if exists.
-
-
-        When no containers match the state it will still return a `200/OK`,
-        there are a `JSON` key called `listEmpty` that is either `true` or
-        `false` in each response for specified state.
-
-
-        The key `ListEmpty` is used for automations where you want to know if
-        any container is in the specified state.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ListEmpty:
-                        type: object
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - ListEmpty:
-                    type: bool
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_exited: []
-  /v1/containers/getState/paused:
-    get:
-      summary: getState/paused
-      operationId: containers_getstate-paused
-      description: >-
-        Get all containers with the state `paused` if exists.
-
-
-        When no containers match the state it will still return a `200/OK`,
-        there are a `JSON` key called `listEmpty` that is either `true` or
-        `false` in each response for specified state.
-
-
-        The key `ListEmpty` is used for automations where you want to know if
-        any container is in the specified state.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ListEmpty:
-                        type: object
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - ListEmpty:
-                    type: bool
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_paused: []
-  /v1/containers/getState/running:
-    get:
-      summary: getState/running
-      operationId: containers_getstate-running
-      description: >-
-        Get all containers with the state `running` if exists.
-
-
-        When no containers match the state it will still return a `200/OK`,
-        there are a `JSON` key called `listEmpty` that is either `true` or
-        `false` in each response for specified state.
-
-
-        The key `ListEmpty` is used for automations where you want to know if
-        any container is in the specified state.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ListEmpty:
-                        type: object
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - ListEmpty:
-                    type: bool
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_running: []
-  /v1/containers/getState/unknown:
-    get:
-      summary: getState/unknown
-      operationId: containers_getstate-unknown
-      description: >-
-        Get all containers with the state `unknown` if exists.
-
-
-        When no containers match the state it will still return a `200/OK`,
-        there are a `JSON` key called `listEmpty` that is either `true` or
-        `false` in each response for specified state.
-
-
-        The key `ListEmpty` is used for automations where you want to know if
-        any container is in the specified state.
-      tags:
-        - Containers
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Names:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    State:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Exited:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ExitCode:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ListEmpty:
-                        type: object
-              example:
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - Names:
-                    type: string
-                  State:
-                    type: string
-                  Status:
-                    type: string
-                  Exited:
-                    type: bool
-                  ExitCode:
-                    type: integer
-                - ListEmpty:
-                    type: bool
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_unknown: []
   /v1/containers/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: containers_getstatesingle--id-
+      operationId: >-
+        containers_getstatesingle--id-
       description: >
         Get container status for a single container.
 
@@ -3695,16 +3733,17 @@ paths:
           example: application/json
       security:
         - getstatesingle_id: []
-  /v1/containers/postContainerCreate:
+  /v1/containers/postCreate:
     post:
-      summary: postContainerCreate
-      operationId: containers_postcontainercreate
+      summary: postCreate
+      operationId: >-
+        containers_postcreate
       description: >-
         This endpoint is for creating a container.
 
 
-        All options needs to be separated with a comma (`,`) and start with `--`
-        or they will be invalid.
+        All options needs to be separated with a double pipes (`||`) and start
+        with `--` or they will be invalid.
 
 
         Example:
@@ -3715,7 +3754,7 @@ paths:
         {
           "name": "MyContainer",
           "image": "/full/path/to/repo/image:tag",
-          "options": "--option1,--option2=value2"
+          "options": "--option1||--option2=value2"
         }
 
          ```
@@ -3832,13 +3871,14 @@ paths:
             type: string
           example: application/json
       requestBody:
-        $ref: '#/components/requestBodies/postcontainercreate'
+        $ref: '#/components/requestBodies/postcreate'
       security:
-        - postcontainercreate: []
+        - postcreate: []
   /v1/containers/postSetState:
     post:
       summary: postSetState
-      operationId: containers_postsetstate
+      operationId: >-
+        containers_postsetstate
       description: >-
         With this endpoint you can start, stop, pause and so on for a single
         container.  
@@ -3953,10 +3993,115 @@ paths:
         $ref: '#/components/requestBodies/postsetstate'
       security:
         - postsetstate: []
+  /v1/containers/postRename:
+    post:
+      summary: postRename
+      operationId: >-
+        containers_postrename
+      description: >-
+        Endpoint for renaming an existing container.
+
+
+        The container can be in any state but the changing of the name might not
+        show correctly until container is restarted.
+
+
+        Example:
+
+
+        ```bash
+
+        {
+          "current": "ContainerNameOld",
+          "new": "ContainerNameNew"
+        }
+
+        ```
+      tags:
+        - Containers
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Content-Type
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      requestBody:
+        $ref: '#/components/requestBodies/postrename'
+      security:
+        - postrename: []
   /v1/containers/deleteContainer:
     delete:
       summary: deleteContainer
-      operationId: containers_deletecontainer
+      operationId: >-
+        containers_deletecontainer
       description: >-
         Deletes a container when it is no longer needed.
 
@@ -4067,7 +4212,8 @@ paths:
   /v1/containers/deleteVolume:
     delete:
       summary: deleteVolume
-      operationId: containers_deletevolume
+      operationId: >-
+        containers_deletevolume
       description: >-
         Removes a named volume.
 
@@ -4174,7 +4320,8 @@ paths:
   /v1/pods/getShortList/<type>:
     get:
       summary: getShortList/<type>
-      operationId: pods_getshortlist--type-
+      operationId: >-
+        pods_getshortlist--type-
       description: >
         Get a complete list of `pods` either by `name` or `ID` for further
         processing.
@@ -4271,94 +4418,11 @@ paths:
           example: application/json
       security:
         - getshortlist_type_1: []
-  /v1/pods/getState:
-    get:
-      summary: getState
-      operationId: pods_getstate
-      description: Get state for all pods exisintg on the server.
-      tags:
-        - Pods
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    Name:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    ID:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-                    Status:
-                      type: object
-                      properties:
-                        type:
-                          type: string
-              example:
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-                - Name:
-                    type: string
-                  ID:
-                    type: string
-                  Status:
-                    type: string
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  Code:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Info:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-                  Status:
-                    type: object
-                    properties:
-                      type:
-                        type: string
-              example:
-                Code:
-                  type: integer
-                Info:
-                  type: string
-                Status:
-                  type: string
-      parameters:
-        - name: Accept
-          in: header
-          description: ''
-          required: true
-          schema:
-            type: string
-          example: application/json
-      security:
-        - getstate_1: []
   /v1/pods/getState/created:
     get:
       summary: getState/created
-      operationId: pods_getstate-created
+      operationId: >-
+        pods_getstate-created
       description: >-
         Get all pods with the state `created` if exists.
 
@@ -4398,7 +4462,10 @@ paths:
                         type:
                           type: string
                     ListEmpty:
-                        type: object
+                      type: object
+                      properties:
+                        type:
+                          type: string
               example:
                 - Name:
                     type: string
@@ -4485,7 +4552,8 @@ paths:
   /v1/pods/getState/exited:
     get:
       summary: getState/exited
-      operationId: pods_getstate-exited
+      operationId: >-
+        pods_getstate-exited
       description: >-
         Get all pods with the state `exited` if exists.
 
@@ -4525,7 +4593,10 @@ paths:
                         type:
                           type: string
                     ListEmpty:
-                        type: object
+                      type: object
+                      properties:
+                        type:
+                          type: string
               example:
                 - Name:
                     type: string
@@ -4612,7 +4683,8 @@ paths:
   /v1/pods/getState/paused:
     get:
       summary: getState/paused
-      operationId: pods_getstate-paused
+      operationId: >-
+        pods_getstate-paused
       description: >-
         Get all pods with the state `paused` if exists.
 
@@ -4652,7 +4724,10 @@ paths:
                         type:
                           type: string
                     ListEmpty:
-                        type: object
+                      type: object
+                      properties:
+                        type:
+                          type: string
               example:
                 - Name:
                     type: string
@@ -4739,7 +4814,8 @@ paths:
   /v1/pods/getState/running:
     get:
       summary: getState/running
-      operationId: pods_getstate-running
+      operationId: >-
+        pods_getstate-running
       description: >-
         Get all pods with the state `running` if exists.
 
@@ -4779,7 +4855,10 @@ paths:
                         type:
                           type: string
                     ListEmpty:
-                        type: object
+                      type: object
+                      properties:
+                        type:
+                          type: string
               example:
                 - Name:
                     type: string
@@ -4866,7 +4945,8 @@ paths:
   /v1/pods/getState/unknown:
     get:
       summary: getState/unknown
-      operationId: pods_getstate-unknown
+      operationId: >-
+        pods_getstate-unknown
       description: >-
         Get all pods with the state `unknown` if exists.
 
@@ -4906,7 +4986,10 @@ paths:
                         type:
                           type: string
                     ListEmpty:
-                        type: object
+                      type: object
+                      properties:
+                        type:
+                          type: string
               example:
                 - Name:
                     type: string
@@ -4990,10 +5073,96 @@ paths:
           example: application/json
       security:
         - getstate_unknown_1: []
+  /v1/pods/getState:
+    get:
+      summary: getState
+      operationId: >-
+        pods_getstate
+      description: Get state for all pods exisintg on the server.
+      tags:
+        - Pods
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    Name:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    ID:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                    Status:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+              example:
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+                - Name:
+                    type: string
+                  ID:
+                    type: string
+                  Status:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Code:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Info:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                  Status:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+              example:
+                Code:
+                  type: integer
+                Info:
+                  type: string
+                Status:
+                  type: string
+      parameters:
+        - name: Accept
+          in: header
+          description: ''
+          required: true
+          schema:
+            type: string
+          example: application/json
+      security:
+        - getstate_1: []
   /v1/pods/getStateSingle/<id>:
     get:
       summary: getStateSingle/<id>
-      operationId: pods_getstatesingle--id-
+      operationId: >-
+        pods_getstatesingle--id-
       description: |-
         Get status for a single pod, whether it is running, exited and so on.
 
@@ -5098,16 +5267,17 @@ paths:
           example: application/json
       security:
         - getstatesingle_id_1: []
-  /v1/pods/postPodCreate:
+  /v1/pods/postCreate:
     post:
-      summary: postPodCreate
-      operationId: pods_postpodcreate
+      summary: postCreate
+      operationId: >-
+        pods_postcreate
       description: >-
         Endpoint for creating a pod with a set of options.
 
 
-        All options needs to be comma (`,`) separated and start with `--` or
-        they will be invalid.
+        All options needs to be separated with double pipes (`||`) and start
+        with `--` or they will be invalid.
 
 
         Example:
@@ -5117,7 +5287,7 @@ paths:
 
         {
           "name": "name",
-          "options": "--option1,--option2=value"
+          "options": "--option1||--option2=value"
         }
 
          ```
@@ -5234,13 +5404,14 @@ paths:
             type: string
           example: application/json
       requestBody:
-        $ref: '#/components/requestBodies/postpodcreate'
+        $ref: '#/components/requestBodies/postcreate_2'
       security:
-        - postpodcreate: []
+        - postcreate_2: []
   /v1/pods/postSetState:
     post:
       summary: postSetState
-      operationId: pods_postsetstate
+      operationId: >-
+        pods_postsetstate
       description: >-
         With this endpoint you can start, stop, pause and so on for a single
         pod.  
@@ -5378,7 +5549,8 @@ paths:
   /v1/pods/deletePod:
     delete:
       summary: deletePod
-      operationId: pods_deletepod
+      operationId: >-
+        pods_deletepod
       description: >-
         This endpoint gives you the option to delete a unused pod and if the pod
         has containers connected to it, removal is not possible, this to have
@@ -5483,7 +5655,8 @@ paths:
   /v1/networks/getInfo:
     get:
       summary: getInfo
-      operationId: networks_getinfo
+      operationId: >-
+        networks_getinfo
       description: Get basic information on all existing networks.
       tags:
         - Networks
@@ -5576,7 +5749,8 @@ paths:
   /v1/networks/getInfoSingle/<id>:
     get:
       summary: getInfoSingle/<id>
-      operationId: networks_getinfosingle--id-
+      operationId: >-
+        networks_getinfosingle--id-
       description: >-
         Get information on a specific network.
 
@@ -6047,16 +6221,17 @@ paths:
           example: application/json
       security:
         - getinfosingle_id: []
-  /v1/networks/postNetworkCreate:
+  /v1/networks/postCreate:
     post:
-      summary: postNetworkCreate
-      operationId: networks_postnetworkcreate
+      summary: postCreate
+      operationId: >-
+        networks_postcreate
       description: >-
         Endpoint for creating a network.
 
 
-        All options needs to be comma (`,`) seperated and start with `--` or
-        they will be invalid.
+        All options needs to be separated with double pipes (`||`) and start
+        with `--` or they will be invalid.
 
 
         Example:
@@ -6066,7 +6241,7 @@ paths:
 
         {
           "name": "name",
-          "options": "--option1,--option2=value,--option3=paramaeter=value"
+          "options": "--option1||--option2=value||--option3=paramaeter=value"
         }
 
          ```
@@ -6183,13 +6358,14 @@ paths:
             type: string
           example: application/json
       requestBody:
-        $ref: '#/components/requestBodies/postnetworkcreate'
+        $ref: '#/components/requestBodies/postcreate_1'
       security:
-        - postnetworkcreate: []
+        - postcreate_1: []
   /v1/networks/deleteNetwork:
     delete:
       summary: deleteNetwork
-      operationId: networks_deletenetwork
+      operationId: >-
+        networks_deletenetwork
       description: >-
         This endpoint gives you the option to delete an unused network, if the
         network is connected to a container it can not be removed, this to have
@@ -6292,7 +6468,7 @@ paths:
       security:
         - deletenetwork: []
 servers:
-  - url: ""
+  - url: ''
     description: Base Server
 components:
   schemas:
@@ -6334,8 +6510,8 @@ components:
           type: string
       example:
         name: example_filename
-        content: user=example|pass=example
-        replace: yes/no
+        content: user=example||pass=example
+        replace: 'no'
     postgetrepoimage:
       type: object
       properties:
@@ -6390,7 +6566,7 @@ components:
       example:
         name: secret_name
         data: secret_value
-        labels: LabelExample1=LabelValue1,LabelExample2=LabelValue2
+        labels: LabelExample1=LabelValue1||LabelExample2=LabelValue2
         replace: yes/no
     deletecontainer:
       type: object
@@ -6412,7 +6588,7 @@ components:
       example:
         name: volume_name
         key: secret_key
-    postcontainercreate:
+    postcreate:
       type: object
       properties:
         name:
@@ -6424,7 +6600,7 @@ components:
       example:
         name: container_name
         image: example.com/path/image:tag
-        options: '--option1,--option2=value2'
+        options: '--option1||--option2=value2'
     postsetstate:
       type: object
       properties:
@@ -6435,6 +6611,16 @@ components:
       example:
         name: container_name
         state: state_to_set
+    postrename:
+      type: object
+      properties:
+        current:
+          type: string
+        new:
+          type: string
+      example:
+        current: current_name
+        new: new_name
     deletenetwork:
       type: object
       properties:
@@ -6445,7 +6631,7 @@ components:
       example:
         name: network_name
         key: secret_key
-    postnetworkcreate:
+    postcreate_1:
       type: object
       properties:
         name:
@@ -6454,7 +6640,7 @@ components:
           type: string
       example:
         name: network-name
-        options: '--option1,--option2=value2,--option3=paramaeter=value'
+        options: '--option1||--option2=value2||--option3=paramaeter=value'
     deletepod:
       type: object
       properties:
@@ -6465,7 +6651,7 @@ components:
       example:
         name: pod_name
         key: secret_key
-    postpodcreate:
+    postcreate_2:
       type: object
       properties:
         name:
@@ -6474,7 +6660,7 @@ components:
           type: string
       example:
         name: pod_name
-        options: '--option1,--option2=value2'
+        options: '--option1||--option2=value2'
     postsetstate_1:
       type: object
       properties:
@@ -6563,11 +6749,11 @@ components:
             $ref: '#/components/schemas/deletevolume'
       description: ''
       required: true
-    postcontainercreate:
+    postcreate:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/postcontainercreate'
+            $ref: '#/components/schemas/postcreate'
       description: ''
       required: true
     postsetstate:
@@ -6577,6 +6763,13 @@ components:
             $ref: '#/components/schemas/postsetstate'
       description: ''
       required: true
+    postrename:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/postrename'
+      description: ''
+      required: true
     deletenetwork:
       content:
         application/json:
@@ -6584,11 +6777,11 @@ components:
             $ref: '#/components/schemas/deletenetwork'
       description: ''
       required: true
-    postnetworkcreate:
+    postcreate_1:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/postnetworkcreate'
+            $ref: '#/components/schemas/postcreate_1'
       description: ''
       required: true
     deletepod:
@@ -6598,11 +6791,11 @@ components:
             $ref: '#/components/schemas/deletepod'
       description: ''
       required: true
-    postpodcreate:
+    postcreate_2:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/postpodcreate'
+            $ref: '#/components/schemas/postcreate_2'
       description: ''
       required: true
     postsetstate_1:
@@ -6688,10 +6881,13 @@ components:
     getstatesingle_id:
       type: http
       scheme: basic
-    postcontainercreate:
+    postcreate:
       type: http
       scheme: basic
     postsetstate:
+      type: http
+      scheme: basic
+    postrename:
       type: http
       scheme: basic
     deletenetwork:
@@ -6703,7 +6899,7 @@ components:
     getinfosingle_id:
       type: http
       scheme: basic
-    postnetworkcreate:
+    postcreate_1:
       type: http
       scheme: basic
     deletepod:
@@ -6733,7 +6929,7 @@ components:
     getstatesingle_id_1:
       type: http
       scheme: basic
-    postpodcreate:
+    postcreate_2:
       type: http
       scheme: basic
     postsetstate_1:

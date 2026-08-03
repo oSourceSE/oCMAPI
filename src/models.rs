@@ -128,3 +128,10 @@ pub struct RepoLogOut {
 pub struct GetImageInfo {
     pub name: String,
 }
+
+// Model for renaming a container.
+#[derive(Serialize,Deserialize)]
+pub struct RenameContainer {
+    pub current: String,
+    pub new: String,
+}
