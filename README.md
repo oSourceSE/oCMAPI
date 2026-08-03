@@ -4,8 +4,9 @@ A project sprung out of the urge to learn rust and wanting to build a `API` for 
 
 ## Functionality
 
-The `API` is built atop the standard `podman` binary and acts as an extension to the functionality it has and makes it possible to remote manage your `podman` servers 
-and this `API` was built for and works seamless with `Rootless` containers and do not require any other privileges to work.
+The `API` is built atop the standard `podman` binary and acts as an extension to the functionality it has and makes it possible to remote manage your `podman` servers.
+
+This `API` was built for and works seamless with `Rootless` containers and do not require any other privileges to work.
 
 The `API` has support for `SSL` out of the box with `Basic` authorization, `Salted` cookie data and `custom` cookie name.
 All logging is done in `CEF` format to ensure a standardized logging output when needed.
@@ -18,12 +19,13 @@ The `API` has been validated against `OpenAPI` version `3.0.0` and the `yaml` fi
 
 All requests and responses are `JSON` based for all `API` endpoints.
 
+The binary has been compiled on `LMDE 7` that is built on top of `Debian Trixie 13.5` with `Rust` and has been tested on `Ubuntu 26.04` with `Podman 5.7.0` and `Debian Trixie 13.5` with `Podman 5.4.2`.
+
 ## Configuration
+
 The configuration file has information on what is required or not, the program will let you now if any of them are missing information.
 
 ## Usage
-
-The binary has been compiled on `Ubuntu 24.04.4 LTS` with Rust  1.91.1, but has been tested on `Ubuntu 25.10` and with `Podman 5.4.2`.
 
 Follow these steps and you should be up and running in no time.
 
@@ -112,9 +114,11 @@ Endpoints:
 >
 > /v1/containers/getShortList
 >
-> /v1/containers/postContainerCreate
+> /v1/containers/postCreate
 >
 > /v1/containers/postSetState
+>
+> /v1/containers/postRename
 >
 > /v1/containers/deleteContainer
 >
@@ -133,7 +137,7 @@ Endpoints:
 >
 > /v1/pods/getShortList
 > 
-> /v1/pods/postPodCreate
+> /v1/pods/postCreate
 >
 > /v1/pods/postSetState
 >
@@ -148,7 +152,7 @@ Endpoints:
 >
 > /v1/networks/getInfoSingle/\<id\>
 >
-> /v1/networks/postNetworkCreate
+> /v1/networks/postCreate
 >
 > /v1/networks/deleteNetwork
 
@@ -167,6 +171,3 @@ Options:
 ## Examples
 In the `examples` folder there are `Ansible` examples for each endpoint in the API.
 
-## TODO
-
-More API:s are in the works and will be available shortly.
